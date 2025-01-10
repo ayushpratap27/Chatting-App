@@ -17,7 +17,7 @@ export const signup = async (req, res, next) => {
 
         const user = await User.create({ email, password });
 
-        res.cookie("jwt", createToken(email, user._id), { 
+        res.cookie("jwt", createToken(email, user.id), { 
             maxAge,
             secure: true,
             sameSite: "none",
@@ -25,7 +25,7 @@ export const signup = async (req, res, next) => {
 
         return res.status(201).json({
             user: {
-                id: user._id,
+                id: user.id,
                 email: user.email,
                 profileSetup: user.profileSetup,
             },
@@ -51,7 +51,7 @@ export const login = async (req, res, next) => {
         if (!auth) {
             return res.status(401).send("Invalid credentials");
         }
-        res.cookie("jwt", createToken(email, user._id), { 
+        res.cookie("jwt", createToken(email, user.id), { 
             maxAge,
             secure: true,
             sameSite: "none",
@@ -59,7 +59,7 @@ export const login = async (req, res, next) => {
 
         return res.status(200).json({
             user: {
-                id: user._id,
+                id: user.id,
                 email: user.email,
                 profileSetup: user.profileSetup,
                 firstName: user.firstName,
@@ -72,4 +72,27 @@ export const login = async (req, res, next) => {
         console.log({error});
         return res.status(500).send("Internal server error");
     }
-}
+};
+
+export const getUserInfo = async (req, res, next) => {
+    try {
+        const userData = await User.findById(req.userId);
+        if(!userData) {
+            return res.status(404).send("User with the given id not found.");
+        } 
+
+        return res.status(200).json({
+            id: userData.id,
+            email: userData.email,
+            profileSetup: userData.profileSetup,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            image: userData.image,
+            color: userData.color,
+
+        });
+    } catch (error) {
+        console.log({error});
+        return res.status(500).send("Internal server error");
+    }
+};
