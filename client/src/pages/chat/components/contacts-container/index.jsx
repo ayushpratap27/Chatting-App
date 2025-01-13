@@ -1,3 +1,4 @@
+import ProfileInfo from "./components/profile-info";
 
 function ContactsContainer() {
   return (
@@ -15,6 +16,7 @@ function ContactsContainer() {
                 <Title text="Channels" />
             </div>
         </div>
+        <ProfileInfo/>
     </div>
   )
 }
