@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import authRoutes from "./routes/auth.route.js";
 import contactsRoutes from "./routes/contacts.route.js";
 import setupSocket from "./socket.js";
+import messagesRoutes from "./routes/messages.route.js";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/contacts", contactsRoutes);
+app.use("/api/messages", messagesRoutes);
 
 const server = app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
