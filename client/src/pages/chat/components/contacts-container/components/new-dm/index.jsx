@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import Lottie from 'react-lottie';
 import { animationDefaultOptions, getColor } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
-import { SEARCH_CONTACTS_ROUTE } from '@/utils/constants';
+import { HOST, SEARCH_CONTACTS_ROUTE } from '@/utils/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { useAppStore } from '@/store';
@@ -92,7 +92,7 @@ function NewDM() {
                           <AvatarImage
                             src={`${HOST}/${contact.image}`}
                             alt="profile"
-                            className="object-cover w-full h-full bg-black"
+                            className="object-cover w-full h-full bg-black rounded-full"
                           />
                         ) : (
                           <div className={`uppercase h-12 w-12 flex items-center justify-center text-lg border-[1px] rounded-full ${getColor(
