@@ -43,7 +43,7 @@ function MessageContainer() {
       return (
         <div key={index}>
           {showDate && (
-            <div className='text-center text-gray-500 my-2'>
+            <div className='text-center text-gray-500 my-2' ref={scrollRef}>
               {moment(message.timestamp).format("LL")}
             </div>
           )}
