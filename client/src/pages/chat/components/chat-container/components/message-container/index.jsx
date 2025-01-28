@@ -123,12 +123,12 @@ function MessageContainer() {
               ? "bg-[#8417ff]/5 text-white/80 border-[#8417ff]/50"
               : "bg-[#2a2b33]/5 text-white/80 border-[#ffffff]/20"
           } border inline-block p-4 rounded-md my-1 max-w-[50%] break-words`}
+          style={{ whiteSpace: "pre-wrap",  wordWrap: "break-word" }}
         >
           {message.content}
         </div>
       )}
-      {
-        message.messageType === "file" && (
+      {message.messageType === "file" && (
         <div
           className={`${
             message.sender !== selectedChatData._id
@@ -137,34 +137,40 @@ function MessageContainer() {
           } border inline-block p-4 rounded-md my-1 max-w-[50%] break-words`}
         >
           {checkIfImage(message.fileUrl) ? (
-            <div className='cursor-pointer' onClick={() => {
-              setShowImage(true);
-              setImageURL(message.fileUrl);
-            }}>
-              <img src={`${HOST}/${message.fileUrl}`}
+            <div className="cursor-pointer"
+              onClick={() => {
+                setShowImage(true);
+                setImageURL(message.fileUrl);
+              }}
+            >
+              <img
+                src={`${HOST}/${message.fileUrl}`}
                 height={300}
                 width={300}
+                alt="message file"
               />
-            </div> 
-          )  : ( 
-            <div className='flex items-center justify-center gap-4'>
-              <span className='text-white/80 text-3xl bg-black/20 rounded-full p-3'>
-                <MdFolderZip/>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-4">
+              <span className="text-white/80 text-3xl bg-black/20 rounded-full p-3">
+                <MdFolderZip />
               </span>
               <span>{message.fileUrl.split("/").pop()}</span>
-              <span className='bg-black/20 p-3 text-2xl rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300'
-              onClick={() => downloadFile(message.fileUrl)}>
+              <span
+                className="bg-black/20 p-3 text-2xl rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300"
+                onClick={() => downloadFile(message.fileUrl)}
+              >
                 <IoMdArrowRoundDown />
               </span>
             </div>
           )}
-        </div>)
-      }
-      <div className='text-xs text-gray-600'>
+        </div>
+      )}
+      <div className="text-xs text-gray-600">
         {moment(message.timestamp).format("LT")}
       </div>
     </div>
-  );
+  ); 
 
   const renderChannelMessages = (message) => {
     return (
