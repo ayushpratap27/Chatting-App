@@ -9,6 +9,7 @@ import { IoCloseSharp } from 'react-icons/io5';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getColor } from '@/lib/utils';
 import { toast } from 'sonner';
+import { getLastRead, setLastRead } from '@/lib/last-read';
 
 function MessageContainer() {
   const scrollRef = useRef();
@@ -18,12 +19,32 @@ function MessageContainer() {
           selectedChatMessages, 
           setSelectedChatMessages,
           setFileDownloadProgress,
-          setIsDownloading, 
+          setIsDownloading,
+          setUnreadMessages,
+          setShowSummaryBanner,
         } = useAppStore();
   const [showImage, setShowImage] = useState(false);
   const [imageURL, setImageURL] = useState(null);
 
   useEffect(() => {
+    const detectUnread = (messages, isDM) => {
+      const lastRead = getLastRead(selectedChatData._id);
+      const unread = messages.filter((m) => {
+        if (m.messageType !== "text") return false;
+        const senderId = isDM ? m.sender : m.sender?._id;
+        if (senderId === userInfo.id) return false;
+        if (!lastRead) return true;
+        return new Date(m.timestamp) > new Date(lastRead);
+      });
+      setUnreadMessages(unread);
+      setShowSummaryBanner(unread.length > 0);
+      // Auto-mark as read after 8 seconds
+      const timer = setTimeout(() => setLastRead(selectedChatData._id), 8000);
+      return timer;
+    };
+
+    let autoReadTimer = null;
+
     const getMessages = async () => {
       try {
         const response = await apiClient.post(
@@ -32,7 +53,8 @@ function MessageContainer() {
           { withCredentials: true }
         );
         if(response.data.messages) {
-          setSelectedChatMessages(response.data.messages)
+          setSelectedChatMessages(response.data.messages);
+          autoReadTimer = detectUnread(response.data.messages, true);
         }
       } catch (error) {
         toast.error("Failed to load messages");
@@ -45,7 +67,8 @@ function MessageContainer() {
           { withCredentials: true }
         );
         if(response.data.messages) {
-          setSelectedChatMessages(response.data.messages)
+          setSelectedChatMessages(response.data.messages);
+          autoReadTimer = detectUnread(response.data.messages, false);
         }
       } catch (error) {
         toast.error("Failed to load messages");
@@ -55,7 +78,8 @@ function MessageContainer() {
       if(selectedChatType === "contact") getMessages();
       else if(selectedChatType === "channel") getChannelMessages();
     }
-  }, [selectedChatData, selectedChatType, setSelectedChatMessages]);
+    return () => { if (autoReadTimer) clearTimeout(autoReadTimer); };
+  }, [selectedChatData, selectedChatType, setSelectedChatMessages, setUnreadMessages, setShowSummaryBanner]);
 
   useEffect(() => {
     if(scrollRef.current) {
