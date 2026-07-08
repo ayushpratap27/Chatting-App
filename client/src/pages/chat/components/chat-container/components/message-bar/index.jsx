@@ -38,6 +38,7 @@ function MessageBar() {
     };
 
     const handleSendMessage = async () => {
+        if(!message.trim()) return;
         if(selectedChatType === "contact") {
             socket.emit("sendMessage", {
                 sender: userInfo.id,

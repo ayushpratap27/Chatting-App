@@ -18,8 +18,13 @@ function Auth() {
   const [confirmPassword, setConfirmPassword] = useState("")
 
   const validateLogin = () => {
-    if(!email.length) {
+    if(!email.trim().length) {
       toast.error("Email is required")
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRegex.test(email.trim())) {
+      toast.error("Please enter a valid email address")
       return false;
     }
     if(!password.length) {
@@ -30,12 +35,21 @@ function Auth() {
   };
 
   const validateSignup = () => {
-    if(!email.length) {
+    if(!email.trim().length) {
       toast.error("Email is required")
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRegex.test(email.trim())) {
+      toast.error("Please enter a valid email address")
       return false;
     }
     if(!password.length) {
       toast.error("Password is required")
+      return false;
+    }
+    if(password.length < 8) {
+      toast.error("Password must be at least 8 characters")
       return false;
     }
     if(password !== confirmPassword) {
@@ -47,35 +61,43 @@ function Auth() {
 
   const handleLogin = async () => {
     if(validateLogin()){
-      const response = await apiClient.post(
-        LOGIN_ROUTE, 
-        { email, password },
-        { withCredentials: true }
-      );
-      if(response.data.user.id) {
-        setUserInfo(response.data.user);
-        if(response.data.user.profileSetup) {
-          navigate("/chat");
-        } else {
-          navigate("/profile");
+      try {
+        const response = await apiClient.post(
+          LOGIN_ROUTE, 
+          { email: email.trim(), password },
+          { withCredentials: true }
+        );
+        if(response.data.user.id) {
+          setUserInfo(response.data.user);
+          if(response.data.user.profileSetup) {
+            navigate("/chat");
+          } else {
+            navigate("/profile");
+          }
         }
+      } catch (error) {
+        const msg = error.response?.data || "Login failed. Please try again.";
+        toast.error(msg);
       }
-      console.log( {response} );
     }
   };
 
   const handleSignup = async () => {
     if(validateSignup()){
-      const response = await apiClient.post(
-        SIGNUP_ROUTE, 
-        { email, password },
-        { withCredentials: true }
-      );
-      if(response.status === 201) {
-        setUserInfo(response.data.user);
-        navigate("/profile");
+      try {
+        const response = await apiClient.post(
+          SIGNUP_ROUTE, 
+          { email: email.trim(), password },
+          { withCredentials: true }
+        );
+        if(response.status === 201) {
+          setUserInfo(response.data.user);
+          navigate("/profile");
+        }
+      } catch (error) {
+        const msg = error.response?.data || "Signup failed. Please try again.";
+        toast.error(msg);
       }
-      console.log( {response} );
     }
   };
 
