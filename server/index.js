@@ -8,6 +8,7 @@ import contactsRoutes from "./routes/contacts.route.js";
 import setupSocket from "./socket.js";
 import messagesRoutes from "./routes/messages.route.js";
 import channelRoutes from "./routes/channel.route.js";
+import aiRoutes from "./routes/ai.route.js";
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/contacts", contactsRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/channel", channelRoutes);
+app.use("/api/ai", aiRoutes);
 
 // Global error handler — catches errors forwarded via next(err) and Multer errors
 app.use((err, req, res, next) => {
