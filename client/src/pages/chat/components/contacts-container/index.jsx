@@ -6,6 +6,7 @@ import { GET_DM_CONTACTS_ROUTES, GET_USER_CHANNELS_ROUTE } from "@/utils/constan
 import { useAppStore } from "@/store";
 import ContactList from "@/components/ui/contact-list";
 import CreateChannel from "./components/create-channel";
+import { toast } from "sonner";
 
 function ContactsContainer() {
 
@@ -13,19 +14,27 @@ function ContactsContainer() {
 
   useEffect(() => {
     const getContacts = async () => {
-      const response = await apiClient.get(GET_DM_CONTACTS_ROUTES, {
-        withCredentials: true,
-      });
-      if(response.data.contacts) {
-        setDirectMessagesContacts(response.data.contacts);
+      try {
+        const response = await apiClient.get(GET_DM_CONTACTS_ROUTES, {
+          withCredentials: true,
+        });
+        if(response.data.contacts) {
+          setDirectMessagesContacts(response.data.contacts);
+        }
+      } catch (error) {
+        toast.error("Failed to load contacts");
       }
     };
     const getChannels = async () => {
-      const response = await apiClient.get(GET_USER_CHANNELS_ROUTE, {
-        withCredentials: true,
-      });
-      if(response.data.channels) {
-        setChannels(response.data.channels);
+      try {
+        const response = await apiClient.get(GET_USER_CHANNELS_ROUTE, {
+          withCredentials: true,
+        });
+        if(response.data.channels) {
+          setChannels(response.data.channels);
+        }
+      } catch (error) {
+        toast.error("Failed to load channels");
       }
     };
 

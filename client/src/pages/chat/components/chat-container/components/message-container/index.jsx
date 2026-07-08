@@ -74,7 +74,7 @@ function MessageContainer() {
       const showDate = messageDate !== lastDate;
       lastDate = messageDate;
       return (
-        <div key={index}>
+        <div key={message._id || index}>
           {showDate && (
             <div className='text-center text-gray-500 my-2'>
               {moment(message.timestamp).format("LL")}
@@ -88,26 +88,31 @@ function MessageContainer() {
   };
 
   const downloadFile = async (url) => {
-    setIsDownloading(true);
-    setFileDownloadProgress(0);
-    const response = await apiClient.get(`${HOST}/${url}`, {
-      responseType: "blob",
-      onDownloadProgress: (progressEvent) => {
-        const { loaded, total } = progressEvent;
-        const percentCompleted = Math.round((loaded * 100) / total);
-        setFileDownloadProgress(percentCompleted);
-      }
-    });
-    const urlBlob = window.URL.createObjectURL(new Blob([response.data]));
-    const link = document.createElement("a");
-    link.href = urlBlob;
-    link.setAttribute("download", url.split("/").pop());
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(urlBlob);
-    setIsDownloading(false);
-    setFileDownloadProgress(0);
+    try {
+      setIsDownloading(true);
+      setFileDownloadProgress(0);
+      const response = await apiClient.get(`${HOST}/${url}`, {
+        responseType: "blob",
+        onDownloadProgress: (progressEvent) => {
+          const { loaded, total } = progressEvent;
+          const percentCompleted = Math.round((loaded * 100) / total);
+          setFileDownloadProgress(percentCompleted);
+        }
+      });
+      const urlBlob = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = urlBlob;
+      link.setAttribute("download", url.split("/").pop());
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(urlBlob);
+    } catch (error) {
+      console.log({ error });
+    } finally {
+      setIsDownloading(false);
+      setFileDownloadProgress(0);
+    }
   };
 
   const renderDMMessages = (message) => (

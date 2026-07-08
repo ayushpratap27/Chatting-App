@@ -14,6 +14,7 @@ import { CREATE_CHANNEL_ROUTE, GET_ALL_CONTACTS_ROUTES } from '@/utils/constants
 import { useAppStore } from '@/store';
 import MultipleSelector from '@/components/ui/multipleselect.jsx';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
   
 
 function CreateChannel() {
@@ -25,10 +26,14 @@ function CreateChannel() {
 
   useEffect(() => {
     const getData = async () => {
-        const response = await apiClient.get(GET_ALL_CONTACTS_ROUTES, {
-            withCredentials: true,
-        });
-        setAllContacts(response.data.contacts);
+        try {
+            const response = await apiClient.get(GET_ALL_CONTACTS_ROUTES, {
+                withCredentials: true,
+            });
+            setAllContacts(response.data.contacts);
+        } catch (error) {
+            toast.error("Failed to load contacts");
+        }
     };
     getData();
   }, []);
