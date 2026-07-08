@@ -13,6 +13,12 @@ export const createChatSlice = (set, get) => ({
     showSummaryBanner: false,
     summary: null,       // { overall: string|null, perUser: object|null }
     isSummarizing: false,
+    // AI reply suggestions state
+    replySuggestions: [],
+    isFetchingSuggestions: false,
+    showReplySuggestions: false,
+    selectedReplyTone: "Friendly",
+    draftMessage: "",
     setChannels: (channels) => set({ channels }),
     setIsUploading: (isUploading) => set({ isUploading }),
     setIsDownloading: (isDownloading) => set({ isDownloading }),
@@ -26,6 +32,11 @@ export const createChatSlice = (set, get) => ({
     setShowSummaryBanner: (showSummaryBanner) => set({ showSummaryBanner }),
     setSummary: (summary) => set({ summary }),
     setIsSummarizing: (isSummarizing) => set({ isSummarizing }),
+    setReplySuggestions: (replySuggestions) => set({ replySuggestions }),
+    setIsFetchingSuggestions: (isFetchingSuggestions) => set({ isFetchingSuggestions }),
+    setShowReplySuggestions: (showReplySuggestions) => set({ showReplySuggestions }),
+    setSelectedReplyTone: (selectedReplyTone) => set({ selectedReplyTone }),
+    setDraftMessage: (draftMessage) => set({ draftMessage }),
     addChannel: (channel) => {
         const channels = get().channels;
         set({ channels: [channel, ...channels] });
@@ -39,6 +50,10 @@ export const createChatSlice = (set, get) => ({
         showSummaryBanner: false,
         summary: null,
         isSummarizing: false,
+        replySuggestions: [],
+        isFetchingSuggestions: false,
+        showReplySuggestions: false,
+        draftMessage: "",
     }),
     addMessage: (message) => {
         const selectedChatMessages = get().selectedChatMessages;

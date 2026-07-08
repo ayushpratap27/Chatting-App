@@ -24,3 +24,5 @@ export const GET_CHANNEL_MESSAGES = `${CHANNEL_ROUTES}/get-channel-messages`;
 
 export const AI_ROUTES = "api/ai";
 export const SUMMARIZE_ROUTE = `${AI_ROUTES}/summarize`;
+export const SUGGEST_REPLIES_ROUTE = `${AI_ROUTES}/suggest-replies`;
+export const ENHANCE_MESSAGE_ROUTE = `${AI_ROUTES}/enhance-message`;
