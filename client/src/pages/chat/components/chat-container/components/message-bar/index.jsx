@@ -176,8 +176,8 @@ function MessageBar({ onToggleSuggestions }) {
                 <HiSparkles className="text-xl" />
             </button>
 
-            {/* 🪄 Composer AI — only visible when text is present */}
-            {message.trim().length > 0 && (
+            {/* 🪄 Composer AI — only visible when text is present and not currently enhancing */}
+            {message.trim().length > 0 && !isEnhancing && (
                 <div className="relative" ref={wandRef}>
                     <button
                         className="text-neutral-500 focus:border-none focus:outline-none hover:text-[#8417ff] duration-300 transition-all"

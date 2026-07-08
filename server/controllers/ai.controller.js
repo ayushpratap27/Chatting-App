@@ -122,6 +122,7 @@ export const suggestReplies = async (req, res) => {
         const activeTone = TONES.includes(tone) ? tone : "Friendly";
         const transcript = lastMessages
             .slice(-8)
+            .filter((m) => m.content && m.content.trim())
             .map((m) => `[${m.senderName}]: ${m.content}`)
             .join("\n");
 

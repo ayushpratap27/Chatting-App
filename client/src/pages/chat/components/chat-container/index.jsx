@@ -24,7 +24,6 @@ function ChatContainer() {
     setReplySuggestions,
     setIsFetchingSuggestions,
     setShowReplySuggestions,
-    setSelectedReplyTone,
   } = useAppStore();
 
   // Format messages into the shape the server expects
@@ -101,11 +100,17 @@ function ChatContainer() {
 
   // ── Reply suggestion handler ─────────────────────────────────────────────
   const handleFetchSuggestions = async (tone) => {
-    setIsFetchingSuggestions(true);
     // Use last 8 text messages as context
     const contextMsgs = selectedChatMessages
-      .filter((m) => m.messageType === "text")
+      .filter((m) => m.messageType === "text" && m.content?.trim())
       .slice(-8);
+
+    if (contextMsgs.length === 0) {
+      toast.error("No messages yet to base suggestions on");
+      return;
+    }
+
+    setIsFetchingSuggestions(true);
     try {
       const response = await apiClient.post(
         SUGGEST_REPLIES_ROUTE,
