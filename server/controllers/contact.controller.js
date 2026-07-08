@@ -21,7 +21,7 @@ export const searchContacts = async (req, res, next) => {
                 { _id: { $ne: req.userId } }, 
                 { $or: [{ firstName: regex }, { lastName: regex }, { email: regex }] },
             ],
-        });
+        }).limit(20);
 
         return res.status(200).json({ contacts });
     } catch (error) {

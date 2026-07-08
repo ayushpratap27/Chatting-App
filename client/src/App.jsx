@@ -35,7 +35,6 @@ export default function App() {
         } else {
           setUserInfo(undefined);
         }
-        console.log( { response });
       } catch (error) {
         setUserInfo(undefined);
       } finally {
@@ -47,10 +46,15 @@ export default function App() {
     } else {
       setLoading(false);
     }
-  }, [userInfo, setUserInfo]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once on mount — auth state is managed by login/logout handlers directly
 
   if(loading){
-    return <div>Loading...</div>;
+    return (
+      <div className="h-[100vh] w-[100vw] flex items-center justify-center bg-[#1b1c24] text-white text-2xl">
+        Loading...
+      </div>
+    );
   }
 
   return (

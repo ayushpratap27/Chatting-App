@@ -7,6 +7,13 @@ export const createChannel = async (req, res, next) => {
         const { name, members } = req.body;
         const userId = req.userId;
 
+        if (!name || !name.trim()) {
+            return res.status(400).send("Channel name is required");
+        }
+        if (!Array.isArray(members) || members.length === 0) {
+            return res.status(400).send("At least one member is required");
+        }
+
         const admin = await User.findById(userId);
 
         if(!admin){
