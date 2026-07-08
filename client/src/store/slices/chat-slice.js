@@ -8,6 +8,11 @@ export const createChatSlice = (set, get) => ({
     fileUploadProgress: 0,
     fileDownloadProgress: 0,
     channels: [],
+    // AI summarizer state
+    unreadMessages: [],
+    showSummaryBanner: false,
+    summary: null,       // { overall: string|null, perUser: object|null }
+    isSummarizing: false,
     setChannels: (channels) => set({ channels }),
     setIsUploading: (isUploading) => set({ isUploading }),
     setIsDownloading: (isDownloading) => set({ isDownloading }),
@@ -17,12 +22,24 @@ export const createChatSlice = (set, get) => ({
     setSelectedChatData: (selectedChatData) => set({ selectedChatData }),
     setSelectedChatMessages: (selectedChatMessages) => set({ selectedChatMessages }),
     setDirectMessagesContacts: (directMessagesContacts) => set({ directMessagesContacts }),
+    setUnreadMessages: (unreadMessages) => set({ unreadMessages }),
+    setShowSummaryBanner: (showSummaryBanner) => set({ showSummaryBanner }),
+    setSummary: (summary) => set({ summary }),
+    setIsSummarizing: (isSummarizing) => set({ isSummarizing }),
     addChannel: (channel) => {
         const channels = get().channels;
         set({ channels: [channel, ...channels] });
     },
 
-    closeChat: () => set({ selectedChatData: undefined, selectedChatType: undefined, selectedChatMessages: [] }),
+    closeChat: () => set({
+        selectedChatData: undefined,
+        selectedChatType: undefined,
+        selectedChatMessages: [],
+        unreadMessages: [],
+        showSummaryBanner: false,
+        summary: null,
+        isSummarizing: false,
+    }),
     addMessage: (message) => {
         const selectedChatMessages = get().selectedChatMessages;
         const selectedChatType = get().selectedChatType;
