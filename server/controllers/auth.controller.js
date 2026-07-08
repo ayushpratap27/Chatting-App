@@ -1,7 +1,8 @@
 import { compare, hash } from "bcrypt";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
-import { renameSync, unlinkSync } from "fs";
+import { renameSync, unlinkSync, existsSync } from "fs";
+import path from "path";
 
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 const maxAgeSeconds = 3 * 24 * 60 * 60; // JWT expiresIn expects seconds
@@ -141,7 +142,8 @@ export const addProfileImage = async (req, res, next) => {
         }
 
         const date = Date.now();
-        let fileName = "uploads/profiles/" + date + req.file.originalname;
+        const safeName = path.basename(req.file.originalname).replace(/[^a-zA-Z0-9._-]/g, "_");
+        let fileName = "uploads/profiles/" + date + "-" + safeName;
         renameSync(req.file.path, fileName);
 
         const updatedUser = await User.findByIdAndUpdate(
@@ -170,7 +172,9 @@ export const removeProfileImage = async (req, res, next) => {
         }
 
         if(user.image) {
-            unlinkSync(user.image);
+            if (existsSync(user.image)) {
+                unlinkSync(user.image);
+            }
         }
 
         user.image = null;

@@ -34,6 +34,14 @@ app.use("/api/contacts", contactsRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/channel", channelRoutes);
 
+// Global error handler — catches errors forwarded via next(err) and Multer errors
+app.use((err, req, res, next) => {
+    console.error(err);
+    const statusCode = err.status || err.statusCode || 500;
+    const message = err.message || "Internal server error";
+    return res.status(statusCode).send(message);
+});
+
 const server = app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
