@@ -22,6 +22,7 @@ function Profile() {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
+    if(!userInfo) return;
     if(userInfo.profileSetup) {
       setFirstName(userInfo.firstName);
       setLastName(userInfo.lastName);
@@ -58,7 +59,8 @@ function Profile() {
           navigate("/chat");
         }
       } catch (error) {
-        console.log({error});
+        const msg = error.response?.data || "Failed to update profile. Please try again.";
+        toast.error(msg);
       }
     }
   };
@@ -78,16 +80,21 @@ function Profile() {
   const handleImageChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      const formData = new FormData();
-      formData.append("profile-image", file);
-      const response = await apiClient.post(
-        ADD_PROFILE_IMAGE_ROUTE, 
-        formData,
-        {withCredentials: true},
-      );
-      if(response.status === 200 && response.data.image) {
-        setUserInfo({...userInfo, image: response.data.image});
-        toast.success("Image updated successfully");
+      try {
+        const formData = new FormData();
+        formData.append("profile-image", file);
+        const response = await apiClient.post(
+          ADD_PROFILE_IMAGE_ROUTE, 
+          formData,
+          {withCredentials: true},
+        );
+        if(response.status === 200 && response.data.image) {
+          setUserInfo({...userInfo, image: response.data.image});
+          toast.success("Image updated successfully");
+        }
+      } catch (error) {
+        const msg = error.response?.data || "Failed to upload image.";
+        toast.error(msg);
       }
     }
   };
@@ -103,7 +110,8 @@ function Profile() {
         setImage(null);
       }
     } catch (error) {
-      console.log(error);
+      const msg = error.response?.data || "Failed to remove image.";
+      toast.error(msg);
     }
   };
 
