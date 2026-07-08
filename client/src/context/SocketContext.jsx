@@ -22,7 +22,7 @@ export const SocketProvider = ({ children }) => {
                 query: { userId: userInfo.id },
             });
             socket.current.on("connect", () => {
-                console.log("Connected to socket server");
+                // socket connected
             });
 
             const handleReceiveMessage = (message) => {

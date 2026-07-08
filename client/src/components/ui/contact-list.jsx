@@ -1,7 +1,7 @@
 import { getColor } from "@/lib/utils";
 import { useAppStore } from "@/store"
 import { HOST } from "@/utils/constants";
-import { Avatar, AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 
 const ContactList = ({ contacts, isChannel = false }) => {
 
