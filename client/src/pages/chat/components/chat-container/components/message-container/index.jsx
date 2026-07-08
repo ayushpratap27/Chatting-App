@@ -8,6 +8,7 @@ import { IoMdArrowRoundDown } from 'react-icons/io'
 import { IoCloseSharp } from 'react-icons/io5';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getColor } from '@/lib/utils';
+import { toast } from 'sonner';
 
 function MessageContainer() {
   const scrollRef = useRef();
@@ -34,7 +35,7 @@ function MessageContainer() {
           setSelectedChatMessages(response.data.messages)
         }
       } catch (error) {
-        console.log({error})
+        toast.error("Failed to load messages");
       }
     };
     const getChannelMessages = async () => {
@@ -47,7 +48,7 @@ function MessageContainer() {
           setSelectedChatMessages(response.data.messages)
         }
       } catch (error) {
-        console.log({error})
+        toast.error("Failed to load messages");
       }
     };
     if(selectedChatData._id) {
