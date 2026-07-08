@@ -34,6 +34,9 @@ export const signup = async (req, res, next) => {
             },
         });
     } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).send("An account with this email already exists");
+        }
         console.log({error});
         return res.status(500).send("Internal server error");
     }
@@ -48,11 +51,11 @@ export const login = async (req, res, next) => {
 
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(404).send("User not found");
+            return res.status(401).send("Invalid email or password");
         }
         const auth = await compare(password, user.password);
         if (!auth) {
-            return res.status(401).send("Invalid credentials");
+            return res.status(401).send("Invalid email or password");
         }
         res.cookie("jwt", createToken(email, user.id), { 
             maxAge,

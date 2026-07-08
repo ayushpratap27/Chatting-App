@@ -1,6 +1,18 @@
 import { Server as SocketIOServer } from "socket.io";
+import jwt from "jsonwebtoken";
 import Message from "./models/messages.model.js";
 import Channel from "./models/channel.model.js";
+
+// Parse a raw cookie header string into a key-value object
+const parseCookies = (cookieHeader) => {
+    const cookies = {};
+    if (!cookieHeader) return cookies;
+    cookieHeader.split(";").forEach((part) => {
+        const [name, ...rest] = part.split("=");
+        if (name) cookies[name.trim()] = rest.join("=").trim();
+    });
+    return cookies;
+};
 
 const setupSocket = (server) => {
     const io = new SocketIOServer(server, {
@@ -13,6 +25,22 @@ const setupSocket = (server) => {
 
     const userSocketMap = new Map();
 
+    // Verify JWT on every socket connection — rejects unauthenticated clients
+    io.use((socket, next) => {
+        const cookies = parseCookies(socket.handshake.headers.cookie);
+        const token = cookies.jwt;
+        if (!token) {
+            return next(new Error("Authentication error: no token"));
+        }
+        try {
+            const payload = jwt.verify(token, process.env.JWT_KEY);
+            socket.userId = payload.userId;
+            next();
+        } catch (err) {
+            return next(new Error("Authentication error: invalid token"));
+        }
+    });
+
     const disconnect = (socket) => {
         console.log(`Client Disconnected: ${socket.id}`);
         for(const [userId, socketId] of userSocketMap.entries()){
@@ -23,16 +51,20 @@ const setupSocket = (server) => {
         }
     };
 
-    const sendMessage = async (message) => {
+    // authenticatedUserId is the server-verified identity — never trust payload.sender
+    const sendMessage = async (data, authenticatedUserId) => {
         try {
-            if (message.messageType === "text" && (!message.content || !message.content.trim())) {
+            if (data.messageType === "text" && (!data.content || !data.content.trim())) {
                 return;
             }
 
-            const senderSocketId = userSocketMap.get(message.sender);
-            const recipientSocketId = userSocketMap.get(message.recipient);
+            const senderSocketId = userSocketMap.get(authenticatedUserId);
+            const recipientSocketId = userSocketMap.get(data.recipient);
 
-            const createdMessage = await Message.create(message);
+            const createdMessage = await Message.create({
+                ...data,
+                sender: authenticatedUserId, // enforce server-side identity
+            });
 
             const messageData = await Message.findById(createdMessage._id)
                 .populate("sender", "id email firstName lastName image color")
@@ -49,16 +81,16 @@ const setupSocket = (server) => {
         }
     };
 
-    const sendChannelMessage = async (message) => {
+    const sendChannelMessage = async (data, authenticatedUserId) => {
         try {
-            const { channelId, sender, content, messageType, fileUrl } = message;
+            const { channelId, content, messageType, fileUrl } = data;
 
             if (messageType === "text" && (!content || !content.trim())) {
                 return;
             }
 
             const createdMessage = await Message.create({
-                sender,
+                sender: authenticatedUserId, // enforce server-side identity
                 recipient: null,
                 content,
                 messageType,
@@ -96,17 +128,13 @@ const setupSocket = (server) => {
     };
 
     io.on("connection", (socket) => {
-        const userId = socket.handshake.query.userId;
+        // socket.userId is set by the JWT middleware above — guaranteed to be valid
+        const userId = socket.userId;
+        userSocketMap.set(userId, socket.id);
+        console.log(`User connected: ${userId} with socket ID: ${socket.id}`);
 
-        if(userId) {
-            userSocketMap.set(userId, socket.id);
-            console.log(`User connected: ${userId} with socket ID: ${socket.id}`);
-        } else {
-            console.log("User ID not provided during connection");
-        }
-
-        socket.on("sendMessage", sendMessage);
-        socket.on("send-channel-message", sendChannelMessage);
+        socket.on("sendMessage", (message) => sendMessage(message, userId));
+        socket.on("send-channel-message", (message) => sendChannelMessage(message, userId));
         socket.on("disconnect", () => disconnect(socket));
     });
 };
