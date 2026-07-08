@@ -4,9 +4,10 @@ import jwt from "jsonwebtoken";
 import { renameSync, unlinkSync } from "fs";
 
 const maxAge = 3 * 24 * 60 * 60 * 1000;
+const maxAgeSeconds = 3 * 24 * 60 * 60; // JWT expiresIn expects seconds
 
 const createToken = (email, userId) => {
-    return jwt.sign({ email, userId }, process.env.JWT_KEY, { expiresIn: maxAge });
+    return jwt.sign({ email, userId }, process.env.JWT_KEY, { expiresIn: maxAgeSeconds });
 };
 
 export const signup = async (req, res, next) => {

@@ -41,7 +41,7 @@ export const getUserChannels = async (req, res, next) => {
             $or: [{ admin: userId }, { members: userId }],
         }).sort({ updatedAt: -1 });
    
-        return res.status(201).json({ channels });
+        return res.status(200).json({ channels });
     } catch (error) {
         console.log({error});
         return res.status(500).send("Internal server error");
@@ -62,7 +62,7 @@ export const getChannelMessages = async (req, res, next) => {
             return res.status(404).send("Channel not found")
         }
         const messages = channel.messages;
-        return res.status(201).json({ messages });
+        return res.status(200).json({ messages });
     } catch (error) {
         console.log({error});
         return res.status(500).send("Internal server error");
