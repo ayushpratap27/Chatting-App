@@ -1,6 +1,6 @@
 import { useAppStore } from "@/store";
 import { HOST } from "@/utils/constants";
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
 
@@ -12,6 +12,7 @@ export const useSocket = () => {
 
 export const SocketProvider = ({ children }) => {
     const socket = useRef();
+    const [socketInstance, setSocketInstance] = useState(null);
     const { userInfo } = useAppStore();
 
     useEffect(() => {
@@ -28,7 +29,6 @@ export const SocketProvider = ({ children }) => {
                 const { selectedChatData, selectedChatType, addMessage, addContactsInDMContacts } = useAppStore.getState();
 
                 if(selectedChatType !== undefined && (selectedChatData._id === message.sender._id || selectedChatData._id === message.recipient._id)) {
-                    console.log("Received Message: ", message);
                     addMessage(message);
                 }
                 addContactsInDMContacts(message);
@@ -45,15 +45,17 @@ export const SocketProvider = ({ children }) => {
 
             socket.current.on("receiveMessage", handleReceiveMessage);
             socket.current.on("receive-channel-message", handleReceiveChannelMessage);
+            setSocketInstance(socket.current);
 
             return () => {
                 socket.current.disconnect();
+                setSocketInstance(null);
             };
         }
     }, [userInfo]);
 
     return (
-        <SocketContext.Provider value={socket.current}>
+        <SocketContext.Provider value={socketInstance}>
             {children}
         </SocketContext.Provider>
     );

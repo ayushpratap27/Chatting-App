@@ -79,16 +79,16 @@ const setupSocket = (server) => {
             const finalData = { ...messageData._doc, channelId: channel._id };
 
             if (channel && channel.members) {
-                channel.members.forEach((member) => {
-                    const memberSocketId = userSocketMap.get(member._id.toString());
-                    if (memberSocketId) {
-                        io.to(memberSocketId).emit("receive-channel-message", finalData);
+                const memberIds = new Set(channel.members.map((m) => m._id.toString()));
+                // Include admin in the notification set (deduplicated)
+                memberIds.add(channel.admin.toString());
+
+                memberIds.forEach((userId) => {
+                    const socketId = userSocketMap.get(userId);
+                    if (socketId) {
+                        io.to(socketId).emit("receive-channel-message", finalData);
                     }
                 });
-                const adminSocketId = userSocketMap.get(channel.admin._id.toString());
-                if (adminSocketId) {
-                    io.to(adminSocketId).emit("receive-channel-message", finalData);
-                }
             }
         } catch (error) {
             console.log("Error in sendChannelMessage", error.message);

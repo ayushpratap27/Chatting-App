@@ -40,13 +40,13 @@ export const createChatSlice = (set, get) => ({
     },
     addChannelInChannelList: (message) => {
         const channels = get().channels;
-        const data = channels.find((channel) => channel._id === message.channelId);
         const index = channels.findIndex(
             (channel) => channel._id === message.channelId
         );
-        if(index !== -1 && index !== undefined){
-            channels.splice(index, 1);
-            channels.unshift(data);
+        if(index !== -1) {
+            const updated = [...channels];
+            const [moved] = updated.splice(index, 1);
+            set({ channels: [moved, ...updated] });
         }
     },
 
@@ -57,14 +57,15 @@ export const createChatSlice = (set, get) => ({
             : message.sender._id;
         const fromData = message.sender._id === userId ? message.recipient : message.sender;
         const dmContacts = get().directMessagesContacts;
-        const data = dmContacts.find((contact) => contact._id === fromId);
         const index = dmContacts.findIndex((contact) => contact._id === fromId);
-        if(index !== -1 && index !== undefined) {
-            dmContacts.splice(index, 1);
-            dmContacts.unshift(data);
+        let updated;
+        if(index !== -1) {
+            updated = [...dmContacts];
+            const [moved] = updated.splice(index, 1);
+            updated = [moved, ...updated];
         } else {
-            dmContacts.unshift(fromData);
+            updated = [fromData, ...dmContacts];
         }
-        set({ directMessagesContacts: dmContacts });
+        set({ directMessagesContacts: updated });
     },
 });
