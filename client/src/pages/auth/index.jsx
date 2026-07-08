@@ -16,6 +16,14 @@ function Auth() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Clear all fields when the user switches between Login and Signup tabs
+  const handleTabChange = () => {
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+  };
 
   const validateLogin = () => {
     if(!email.trim().length) {
@@ -62,6 +70,7 @@ function Auth() {
   const handleLogin = async () => {
     if(validateLogin()){
       try {
+        setIsLoading(true);
         const response = await apiClient.post(
           LOGIN_ROUTE, 
           { email: email.trim(), password },
@@ -78,6 +87,8 @@ function Auth() {
       } catch (error) {
         const msg = error.response?.data || "Login failed. Please try again.";
         toast.error(msg);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -85,6 +96,7 @@ function Auth() {
   const handleSignup = async () => {
     if(validateSignup()){
       try {
+        setIsLoading(true);
         const response = await apiClient.post(
           SIGNUP_ROUTE, 
           { email: email.trim(), password },
@@ -97,6 +109,8 @@ function Auth() {
       } catch (error) {
         const msg = error.response?.data || "Signup failed. Please try again.";
         toast.error(msg);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -115,7 +129,7 @@ function Auth() {
             </p>
           </div>
           <div className="flex items-center justify-center w-full">
-            <Tabs className="w-3/4" defaultValue="login">
+            <Tabs className="w-3/4" defaultValue="login" onValueChange={handleTabChange}>
               <TabsList className="bg-transparent rounded-none w-full">
                   <TabsTrigger 
                     value="login"
@@ -145,8 +159,8 @@ function Auth() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <Button className="rounded-full p-6" onClick={handleLogin}>
-                  Login
+                <Button className="rounded-full p-6" onClick={handleLogin} disabled={isLoading}>
+                  {isLoading ? "Logging in..." : "Login"}
                 </Button>
               </TabsContent>
               <TabsContent className="flex flex-col gap-5" value="signup">
@@ -171,8 +185,8 @@ function Auth() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
-                <Button className="rounded-full p-6" onClick={handleSignup}>
-                  Signup
+                <Button className="rounded-full p-6" onClick={handleSignup} disabled={isLoading}>
+                  {isLoading ? "Creating account..." : "Signup"}
                 </Button>
               </TabsContent>
             </Tabs>

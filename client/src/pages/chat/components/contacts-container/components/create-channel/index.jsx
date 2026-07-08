@@ -40,24 +40,31 @@ function CreateChannel() {
 
   const createChannel = async () => {
     try {
-      if (channelName.length > 0 && selectedContacts.length > 0) {
-        const response = await apiClient.post(
-          CREATE_CHANNEL_ROUTE,
-          {
-            name: channelName,
-            members: selectedContacts.map((contact) => contact.value),
-          },
-          { withCredentials: true }
-        );
-        if(response.status === 201) {
-          setChannelName("");
-          setSelectedContacts([]);
-          setNewChannelModal(false);
-          addChannel(response.data.channel);
-        }
+      if (!channelName.trim()) {
+        toast.error("Channel name is required");
+        return;
+      }
+      if (selectedContacts.length === 0) {
+        toast.error("Please select at least one member");
+        return;
+      }
+      const response = await apiClient.post(
+        CREATE_CHANNEL_ROUTE,
+        {
+          name: channelName.trim(),
+          members: selectedContacts.map((contact) => contact.value),
+        },
+        { withCredentials: true }
+      );
+      if(response.status === 201) {
+        setChannelName("");
+        setSelectedContacts([]);
+        setNewChannelModal(false);
+        addChannel(response.data.channel);
       }
     }catch (error) {
-      console.log({ error });
+      const msg = error.response?.data || "Failed to create channel.";
+      toast.error(msg);
     }
   };
 
