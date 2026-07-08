@@ -1,10 +1,15 @@
 import Groq from "groq-sdk";
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
 // Model to use — llama-3.3-70b-versatile is fast and high-quality on Groq
 const MODEL = "llama-3.3-70b-versatile";
 const MAX_MESSAGES = 60;
+
+// Lazy-initialize the client so missing GROQ_API_KEY at startup doesn't crash
+let groq = null;
+const getGroqClient = () => {
+    if (!groq) groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    return groq;
+};
 
 // Format messages into a readable transcript for the AI
 const formatTranscript = (messages) =>
@@ -58,7 +63,7 @@ export const summarize = async (req, res) => {
 
             const prompt = `You are a concise chat assistant. For each person below, write a 1-2 sentence summary of what they contributed to this group conversation. Be specific and mention key points they raised.\n\n${groupedText}\n\nRespond ONLY with valid JSON matching this structure:\n${exampleOutput}`;
 
-            const completion = await groq.chat.completions.create({
+            const completion = await getGroqClient().chat.completions.create({
                 model: MODEL,
                 messages: [{ role: "user", content: prompt }],
                 response_format: { type: "json_object" },
@@ -84,7 +89,7 @@ export const summarize = async (req, res) => {
 
         const prompt = `You are a concise and friendly chat assistant. Summarize the following unread messages from ${chatContext}. Keep it to 2-4 sentences. Capture the key topics, decisions, and any action items. Write in a natural, readable tone.\n\nMessages:\n${formatTranscript(textMessages)}`;
 
-        const completion = await groq.chat.completions.create({
+        const completion = await getGroqClient().chat.completions.create({
             model: MODEL,
             messages: [{ role: "user", content: prompt }],
             temperature: 0.3,

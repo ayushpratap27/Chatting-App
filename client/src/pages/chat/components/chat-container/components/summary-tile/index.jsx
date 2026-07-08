@@ -12,7 +12,7 @@ function SummaryTile({ onBreakdown, onClose }) {
   const showPerUser = summary?.view === "per-user";
 
   return (
-    <div className="absolute bottom-24 left-1/2 -translate-x-1/2 w-[92%] max-w-lg z-50">
+    <div className="absolute bottom-[130px] left-1/2 -translate-x-1/2 w-[92%] max-w-lg z-50">
       <div className="bg-[#1c1d25] border border-[#8417ff]/50 rounded-2xl shadow-2xl overflow-hidden">
 
         {/* Header */}

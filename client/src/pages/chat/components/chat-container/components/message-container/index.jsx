@@ -38,8 +38,11 @@ function MessageContainer() {
       });
       setUnreadMessages(unread);
       setShowSummaryBanner(unread.length > 0);
-      // Auto-mark as read after 8 seconds
-      const timer = setTimeout(() => setLastRead(selectedChatData._id), 8000);
+      // Auto-mark as read after 8 seconds — also hides the banner
+      const timer = setTimeout(() => {
+        setLastRead(selectedChatData._id);
+        setShowSummaryBanner(false);
+      }, 8000);
       return timer;
     };
 
