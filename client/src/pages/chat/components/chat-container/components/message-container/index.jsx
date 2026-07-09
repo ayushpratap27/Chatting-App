@@ -196,7 +196,7 @@ function MessageContainer() {
           </span>
         ) : (
           <div
-            className="relative inline-block"
+            className="relative inline-block max-w-[75%] md:max-w-[50%]"
             {...getLongPressProps(message._id)}
             onClick={() => { if (isActive) setActiveMessageId(null); }}
           >
@@ -226,7 +226,7 @@ function MessageContainer() {
                   isMine
                     ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
                     : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
-                } border py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%] break-words text-sm select-none`}
+                } border py-2 px-3 rounded-xl my-0.5 break-words text-sm select-none`}
                 style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}
               >
                 {message.content}
@@ -238,7 +238,7 @@ function MessageContainer() {
                   isMine
                     ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
                     : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
-                } border py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%] break-words`}
+                } border py-2 px-3 rounded-xl my-0.5 break-words`}
               >
                 {checkIfImage(message.fileUrl) ? (
                   <div className="cursor-pointer" onClick={() => { setShowImage(true); setImageURL(message.fileUrl); }}>
@@ -279,7 +279,7 @@ function MessageContainer() {
           <>
             {message.messageType === "text" && (
               <div
-                className="relative inline-block"
+                className="relative inline-block max-w-[75%] md:max-w-[50%]"
                 {...getLongPressProps(message._id)}
                 onClick={() => { if (isActive) setActiveMessageId(null); }}
               >
@@ -306,7 +306,7 @@ function MessageContainer() {
                     isMine
                       ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
                       : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
-                  } border py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%] ml-9 text-sm select-none`}
+                  } border py-2 px-3 rounded-xl my-0.5 break-words text-sm select-none ml-9`}
                   style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}
                 >
                   {message.content}
