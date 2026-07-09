@@ -7,6 +7,15 @@ import path from "path";
 const maxAge = 3 * 24 * 60 * 60 * 1000;
 const maxAgeSeconds = 3 * 24 * 60 * 60; // JWT expiresIn expects seconds
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const cookieOptions = {
+    maxAge,
+    httpOnly: true,
+    secure: isProduction,          // HTTPS only in production; HTTP allowed locally
+    sameSite: isProduction ? "none" : "lax", // cross-domain on Vercel; lax for localhost
+};
+
 const createToken = (email, userId) => {
     return jwt.sign({ email, userId }, process.env.JWT_KEY, { expiresIn: maxAgeSeconds });
 };
@@ -20,11 +29,7 @@ export const signup = async (req, res, next) => {
 
         const user = await User.create({ email, password });
 
-        res.cookie("jwt", createToken(email, user.id), { 
-            maxAge,
-            secure: true,
-            sameSite: "none",
-        });
+        res.cookie("jwt", createToken(email, user.id), cookieOptions);
 
         return res.status(201).json({
             user: {
@@ -57,11 +62,7 @@ export const login = async (req, res, next) => {
         if (!auth) {
             return res.status(401).send("Invalid email or password");
         }
-        res.cookie("jwt", createToken(email, user.id), { 
-            maxAge,
-            secure: true,
-            sameSite: "none",
-        });
+        res.cookie("jwt", createToken(email, user.id), cookieOptions);
 
         return res.status(200).json({
             user: {
@@ -192,7 +193,7 @@ export const removeProfileImage = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
     try {
-        res.cookie("jwt", "", {maxAge:1, secure:true, sameSite:"None"});
+        res.cookie("jwt", "", { maxAge: 1, httpOnly: true, secure: isProduction, sameSite: isProduction ? "none" : "lax" });
         return res.status(200).send("Logged out successfully");
     } catch (error) {
         console.log({error});
