@@ -39,7 +39,7 @@ const ContactList = ({ contacts, isChannel = false }) => {
             }`}
             onClick={() => handleClick(contact)}
           >
-            <div className="flex gap-5 items-center justify-between pr-4 text-neutral-300">
+            <div className="flex gap-5 items-center justify-between pr-10 text-neutral-300">
               <div className="flex gap-5 items-center min-w-0">
                 {!isChannel && (
                   <Avatar className="h-10 w-10 rounded-full overflow-hidden shrink-0">
