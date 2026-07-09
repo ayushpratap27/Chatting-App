@@ -31,7 +31,6 @@ export const SocketProvider = ({ children }) => {
                 if(selectedChatType !== undefined && (selectedChatData._id === message.sender._id || selectedChatData._id === message.recipient._id)) {
                     addMessage(message);
                 } else {
-                    // Not currently viewing this chat — increment unread count
                     incrementUnread(message.sender._id);
                 }
                 addContactsInDMContacts(message);
@@ -43,11 +42,21 @@ export const SocketProvider = ({ children }) => {
                 if(selectedChatType !== undefined && selectedChatData._id === message.channelId) {
                     addMessage(message);
                 } else {
-                    // Not currently viewing this channel — increment unread count
                     incrementUnread(message.channelId);
                 }
                 addChannelInChannelList(message);
             };
+
+            // Presence events
+            socket.current.on("online-users", (userIds) => {
+                useAppStore.getState().setOnlineUsers(userIds);
+            });
+            socket.current.on("user-online", (userId) => {
+                useAppStore.getState().addOnlineUser(userId);
+            });
+            socket.current.on("user-offline", (userId) => {
+                useAppStore.getState().removeOnlineUser(userId);
+            });
 
             socket.current.on("receiveMessage", handleReceiveMessage);
             socket.current.on("receive-channel-message", handleReceiveChannelMessage);

@@ -2,28 +2,14 @@ import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { getColor } from '@/lib/utils';
 import { useAppStore } from '@/store';
 import { HOST } from '@/utils/constants';
-import { useSocket } from '@/context/SocketContext';
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { RiCloseFill } from "react-icons/ri"
 import { IoArrowBack } from 'react-icons/io5';
 
 function ChatHeader() {
 
-  const { closeChat, selectedChatData, selectedChatType } = useAppStore();
-  const socket = useSocket();
-  const [isOnline, setIsOnline] = useState(false);
-
-  // Check online status whenever the selected DM contact changes
-  useEffect(() => {
-    setIsOnline(false);
-    if (selectedChatType === "contact" && socket && selectedChatData?._id) {
-      socket.emit("get-user-status", selectedChatData._id);
-      socket.on("user-status", ({ userId, isOnline: online }) => {
-        if (userId === selectedChatData._id) setIsOnline(online);
-      });
-      return () => socket.off("user-status");
-    }
-  }, [selectedChatData, selectedChatType, socket]);
+  const { closeChat, selectedChatData, selectedChatType, onlineUsers } = useAppStore();
+  const isOnline = selectedChatType === "contact" && onlineUsers.includes(selectedChatData?._id);
 
   return (
     <div className="h-16 border-b-2 border-[#2f303b] flex items-center justify-between px-3 md:px-5">

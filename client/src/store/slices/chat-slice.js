@@ -21,6 +21,8 @@ export const createChatSlice = (set, get) => ({
     draftMessage: "",
     // Unread counts per chat (real-time, keyed by contactId or channelId)
     unreadCounts: {},
+    // Online presence — set of userIds currently connected
+    onlineUsers: [],
     setChannels: (channels) => set({ channels }),
     setIsUploading: (isUploading) => set({ isUploading }),
     setIsDownloading: (isDownloading) => set({ isDownloading }),
@@ -49,6 +51,14 @@ export const createChatSlice = (set, get) => ({
         const updated = { ...counts };
         delete updated[chatId];
         set({ unreadCounts: updated });
+    },
+    setOnlineUsers: (onlineUsers) => set({ onlineUsers }),
+    addOnlineUser: (userId) => {
+        const current = get().onlineUsers;
+        if (!current.includes(userId)) set({ onlineUsers: [...current, userId] });
+    },
+    removeOnlineUser: (userId) => {
+        set({ onlineUsers: get().onlineUsers.filter((id) => id !== userId) });
     },
     addChannel: (channel) => {
         const channels = get().channels;

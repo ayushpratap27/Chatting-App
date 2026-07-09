@@ -133,15 +133,18 @@ const setupSocket = (server) => {
         userSocketMap.set(userId, socket.id);
         console.log(`User connected: ${userId} with socket ID: ${socket.id}`);
 
+        // Send the full online list to the newly connected user
+        socket.emit("online-users", Array.from(userSocketMap.keys()));
+        // Tell everyone else this user is now online
+        socket.broadcast.emit("user-online", userId);
+
         socket.on("sendMessage", (message) => sendMessage(message, userId));
         socket.on("send-channel-message", (message) => sendChannelMessage(message, userId));
-        socket.on("get-user-status", (targetUserId) => {
-            socket.emit("user-status", {
-                userId: targetUserId,
-                isOnline: userSocketMap.has(targetUserId),
-            });
+        socket.on("disconnect", () => {
+            disconnect(socket);
+            // Tell everyone this user went offline
+            io.emit("user-offline", userId);
         });
-        socket.on("disconnect", () => disconnect(socket));
     });
 };
 
