@@ -60,10 +60,7 @@ function ChatHeader() {
               )}
             </span>
             {selectedChatType === "contact" && (
-              <span className={`text-xs flex items-center gap-1 ${
-                isOnline ? "text-[#22c55e]" : "text-white/40"
-              }`}>
-                {isOnline && <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] inline-block" />}
+              <span className={`text-xs ${isOnline ? "text-[#22c55e]" : "text-white/40"}`}>
                 {isOnline ? "Active now" : "Offline"}
               </span>
             )}
