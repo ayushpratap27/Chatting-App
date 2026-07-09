@@ -30,6 +30,8 @@ function MessageContainer() {
   const [showImage, setShowImage] = useState(false);
   const [imageURL, setImageURL] = useState(null);
   const [activeMessageId, setActiveMessageId] = useState(null);
+  // Prevents the synthetic click that fires after a touch long-press from closing the popup
+  const justLongPressedRef = useRef(false);
   const socket = useSocket();
 
   const handleDeleteForEveryone = (messageId) => {
@@ -44,14 +46,20 @@ function MessageContainer() {
     setActiveMessageId(null);
   };
 
-  // Long-press handlers — fires after 500ms hold (works on ALL messages)
+  // Long-press: fires after 500ms hold. Sets the justLongPressedRef flag so the
+  // synthetic click that mobile browsers fire after touchend doesn't close the popup.
   const getLongPressProps = (messageId) => {
     let timer;
     return {
       onMouseDown:  () => { timer = setTimeout(() => setActiveMessageId(messageId), 500); },
       onMouseUp:    () => clearTimeout(timer),
       onMouseLeave: () => clearTimeout(timer),
-      onTouchStart: () => { timer = setTimeout(() => setActiveMessageId(messageId), 500); },
+      onTouchStart: () => {
+        timer = setTimeout(() => {
+          justLongPressedRef.current = true;
+          setActiveMessageId(messageId);
+        }, 500);
+      },
       onTouchEnd:   () => clearTimeout(timer),
       onTouchMove:  () => clearTimeout(timer),
     };
@@ -198,9 +206,8 @@ function MessageContainer() {
           <div
             className="relative inline-block max-w-[75%] md:max-w-[50%]"
             {...getLongPressProps(message._id)}
-            onClick={() => { if (isActive) setActiveMessageId(null); }}
           >
-            {/* Delete popup */}
+            {/* Delete popup */}}
             {isActive && (
               <div className={`absolute ${isMine ? "right-0" : "left-0"} bottom-full mb-1 bg-[#1c1d25] border border-[#2a2b33] rounded-xl shadow-2xl z-50 overflow-hidden min-w-[160px]`}>
                 <button
@@ -281,7 +288,6 @@ function MessageContainer() {
               <div
                 className="relative inline-block max-w-[75%] md:max-w-[50%]"
                 {...getLongPressProps(message._id)}
-                onClick={() => { if (isActive) setActiveMessageId(null); }}
               >
                 {isActive && (
                   <div className={`absolute ${isMine ? "right-0" : "left-0"} bottom-full mb-1 bg-[#1c1d25] border border-[#2a2b33] rounded-xl shadow-2xl z-50 overflow-hidden min-w-[160px]`}>
@@ -363,7 +369,14 @@ function MessageContainer() {
   return (
     <div
       className='flex-1 overflow-y-auto scrollbar-hidden p-3 px-4 md:px-8 w-full'
-      onClick={() => setActiveMessageId(null)}
+      onClick={() => {
+        // Swallow the synthetic click that fires after a touch long-press
+        if (justLongPressedRef.current) {
+          justLongPressedRef.current = false;
+          return;
+        }
+        setActiveMessageId(null);
+      }}
     >
         {renderMessages()}
         <div ref={scrollRef}/>
