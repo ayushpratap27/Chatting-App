@@ -22,6 +22,7 @@ function MessageContainer() {
           setIsDownloading,
           setUnreadMessages,
           setShowSummaryBanner,
+          clearUnread,
         } = useAppStore();
   const [showImage, setShowImage] = useState(false);
   const [imageURL, setImageURL] = useState(null);
@@ -38,6 +39,8 @@ function MessageContainer() {
       });
       setUnreadMessages(unread);
       setShowSummaryBanner(unread.length > 0);
+      // Clear the real-time unread count badge for this chat
+      clearUnread(selectedChatData._id);
       // Auto-mark as read after 8 seconds — also hides the banner
       const timer = setTimeout(() => {
         setLastRead(selectedChatData._id);

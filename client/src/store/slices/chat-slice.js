@@ -19,6 +19,8 @@ export const createChatSlice = (set, get) => ({
     showReplySuggestions: false,
     selectedReplyTone: "Friendly",
     draftMessage: "",
+    // Unread counts per chat (real-time, keyed by contactId or channelId)
+    unreadCounts: {},
     setChannels: (channels) => set({ channels }),
     setIsUploading: (isUploading) => set({ isUploading }),
     setIsDownloading: (isDownloading) => set({ isDownloading }),
@@ -37,6 +39,17 @@ export const createChatSlice = (set, get) => ({
     setShowReplySuggestions: (showReplySuggestions) => set({ showReplySuggestions }),
     setSelectedReplyTone: (selectedReplyTone) => set({ selectedReplyTone }),
     setDraftMessage: (draftMessage) => set({ draftMessage }),
+    incrementUnread: (chatId) => {
+        const counts = get().unreadCounts;
+        set({ unreadCounts: { ...counts, [chatId]: (counts[chatId] || 0) + 1 } });
+    },
+    clearUnread: (chatId) => {
+        const counts = get().unreadCounts;
+        if (!counts[chatId]) return;
+        const updated = { ...counts };
+        delete updated[chatId];
+        set({ unreadCounts: updated });
+    },
     addChannel: (channel) => {
         const channels = get().channels;
         set({ channels: [channel, ...channels] });
@@ -54,6 +67,7 @@ export const createChatSlice = (set, get) => ({
         isFetchingSuggestions: false,
         showReplySuggestions: false,
         draftMessage: "",
+        unreadCounts: {},
     }),
     addMessage: (message) => {
         const selectedChatMessages = get().selectedChatMessages;
