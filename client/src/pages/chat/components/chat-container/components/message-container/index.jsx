@@ -41,11 +41,10 @@ function MessageContainer() {
       setShowSummaryBanner(unread.length > 0);
       // Clear the real-time unread count badge for this chat
       clearUnread(selectedChatData._id);
-      // Auto-mark as read after 8 seconds — also hides the banner
+      // Mark as read after 30 seconds (for unread tracking only — banner stays until user types)
       const timer = setTimeout(() => {
         setLastRead(selectedChatData._id);
-        setShowSummaryBanner(false);
-      }, 8000);
+      }, 30000);
       return timer;
     };
 

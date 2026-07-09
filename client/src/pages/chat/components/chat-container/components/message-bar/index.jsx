@@ -39,6 +39,14 @@ function MessageBar({ onToggleSuggestions }) {
         }
     }, [draftMessage, setDraftMessage]);
 
+    // Dismiss the summarize banner as soon as the user starts typing
+    useEffect(() => {
+        if (message.trim().length > 0) {
+            const { showSummaryBanner, setShowSummaryBanner } = useAppStore.getState();
+            if (showSummaryBanner) setShowSummaryBanner(false);
+        }
+    }, [message]);
+
     // Close emoji picker on outside click
     useEffect(() => {
         function handleClickOutside(event) {
