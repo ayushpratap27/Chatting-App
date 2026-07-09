@@ -26,9 +26,9 @@ function ProfileInfo() {
     };
 
   return (
-    <div className="absolute bottom-0 h-16 flex items-center justify-between px-10 w-full bg-[#2a2b33]">
-      <div className="flex gap-3 items-center justify-center">
-        <div className='w-12 h-12 relative'>
+    <div className="absolute bottom-0 h-16 flex items-center justify-between px-4 w-full bg-[#2a2b33] gap-2">
+      <div className="flex gap-3 items-center min-w-0">
+        <div className='w-12 h-12 shrink-0 relative'>
             <Avatar className="h-12 w-12 rounded-full overflow-hidden">
             {userInfo.image ? (
                 <AvatarImage src={`${HOST}/${userInfo.image}`} alt="profile" className="object-cover w-full h-full bg-black" />
@@ -39,13 +39,13 @@ function ProfileInfo() {
             )}
             </Avatar>
         </div>
-        <div>
+        <div className="truncate text-sm">
             {
                 userInfo.firstName && userInfo.lastName ? `${userInfo.firstName} ${userInfo.lastName}` : ""
             }
         </div>
       </div>
-      <div className='flex gap-5'>
+      <div className='flex gap-5 shrink-0'>
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger>
