@@ -25,15 +25,36 @@ function MessageContainer() {
           setUnreadMessages,
           setShowSummaryBanner,
           clearUnread,
+          hideMessage,
         } = useAppStore();
   const [showImage, setShowImage] = useState(false);
   const [imageURL, setImageURL] = useState(null);
-  const [hoveredMessageId, setHoveredMessageId] = useState(null);
+  const [activeMessageId, setActiveMessageId] = useState(null);
   const socket = useSocket();
 
-  const handleDeleteMessage = (messageId) => {
+  const handleDeleteForEveryone = (messageId) => {
     if (!socket) return;
     socket.emit("delete-message", { messageId });
+    setActiveMessageId(null);
+  };
+
+  const handleDeleteForMe = (messageId) => {
+    if (!socket) return;
+    socket.emit("delete-message-for-me", { messageId });
+    setActiveMessageId(null);
+  };
+
+  // Long-press handlers — fires after 500ms hold (works on ALL messages)
+  const getLongPressProps = (messageId) => {
+    let timer;
+    return {
+      onMouseDown:  () => { timer = setTimeout(() => setActiveMessageId(messageId), 500); },
+      onMouseUp:    () => clearTimeout(timer),
+      onMouseLeave: () => clearTimeout(timer),
+      onTouchStart: () => { timer = setTimeout(() => setActiveMessageId(messageId), 500); },
+      onTouchEnd:   () => clearTimeout(timer),
+      onTouchMove:  () => clearTimeout(timer),
+    };
   };
 
   useEffect(() => {
@@ -165,60 +186,59 @@ function MessageContainer() {
 
   const renderDMMessages = (message, showTime) => {
     const isMine = message.sender !== selectedChatData._id;
-    const isHovered = hoveredMessageId === message._id;
+    const isActive = activeMessageId === message._id;
 
     return (
-    <div
-      className={`${isMine ? "text-right" : "text-left"} group`}
-      onMouseEnter={() => setHoveredMessageId(message._id)}
-      onMouseLeave={() => setHoveredMessageId(null)}
-    >
-      {message.isDeleted ? (
-        <span className="inline-block italic text-white/30 text-xs border border-white/10 rounded-xl py-1.5 px-3 my-0.5">
-          This message was deleted
-        </span>
-      ) : (
-        <>
-          {message.messageType === "text" && (
-            <div className="inline-flex items-end gap-1">
-              {isMine && isHovered && (
+      <div className={`${isMine ? "text-right" : "text-left"}`}>
+        {message.isDeleted ? (
+          <span className="inline-block italic text-white/30 text-xs border border-white/10 rounded-xl py-1.5 px-3 my-0.5">
+            This message was deleted
+          </span>
+        ) : (
+          <div
+            className="relative inline-block"
+            {...getLongPressProps(message._id)}
+            onClick={() => { if (isActive) setActiveMessageId(null); }}
+          >
+            {/* Delete popup */}
+            {isActive && (
+              <div className={`absolute ${isMine ? "right-0" : "left-0"} bottom-full mb-1 bg-[#1c1d25] border border-[#2a2b33] rounded-xl shadow-2xl z-50 overflow-hidden min-w-[160px]`}>
                 <button
-                  onClick={() => handleDeleteMessage(message._id)}
-                  className="text-white/30 hover:text-red-400 transition-all mb-1"
-                  title="Delete message"
+                  onClick={(e) => { e.stopPropagation(); handleDeleteForMe(message._id); }}
+                  className="flex items-center gap-2 px-4 py-2.5 text-white/70 hover:text-white text-xs hover:bg-[#2a2b33] w-full transition-all"
                 >
-                  <RiDeleteBin6Line className="text-sm" />
+                  <RiDeleteBin6Line className="text-sm" /> Delete for me
                 </button>
-              )}
+                {isMine && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDeleteForEveryone(message._id); }}
+                    className="flex items-center gap-2 px-4 py-2.5 text-red-400 text-xs hover:bg-[#2a2b33] w-full transition-all border-t border-[#2a2b33]"
+                  >
+                    <RiDeleteBin6Line className="text-sm" /> Delete for everyone
+                  </button>
+                )}
+              </div>
+            )}
+
+            {message.messageType === "text" && (
               <div
                 className={`${
-                  !isMine
+                  isMine
                     ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
                     : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
-                } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%] break-words text-sm`}
+                } border py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%] break-words text-sm select-none`}
                 style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}
               >
                 {message.content}
               </div>
-            </div>
-          )}
-          {message.messageType === "file" && (
-            <div className="inline-flex items-end gap-1">
-              {isMine && isHovered && (
-                <button
-                  onClick={() => handleDeleteMessage(message._id)}
-                  className="text-white/30 hover:text-red-400 transition-all mb-1"
-                  title="Delete message"
-                >
-                  <RiDeleteBin6Line className="text-sm" />
-                </button>
-              )}
+            )}
+            {message.messageType === "file" && (
               <div
                 className={`${
-                  !isMine
+                  isMine
                     ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
                     : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
-                } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%] break-words`}
+                } border py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%] break-words`}
               >
                 {checkIfImage(message.fileUrl) ? (
                   <div className="cursor-pointer" onClick={() => { setShowImage(true); setImageURL(message.fileUrl); }}>
@@ -228,102 +248,103 @@ function MessageContainer() {
                   <div className="flex items-center justify-center gap-4">
                     <span className="text-white/80 text-3xl bg-black/20 rounded-full p-3"><MdFolderZip /></span>
                     <span>{message.fileUrl.split("/").pop()}</span>
-                    <span className="bg-black/20 p-3 text-2xl rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300" onClick={() => downloadFile(message.fileUrl)}>
+                    <span className="bg-black/20 p-3 text-2xl rounded-full hover:bg-black/50 cursor-pointer transition-all" onClick={() => downloadFile(message.fileUrl)}>
                       <IoMdArrowRoundDown />
                     </span>
                   </div>
                 )}
               </div>
-            </div>
-          )}
-        </>
-      )}
-      {showTime && !message.isDeleted && (
-        <div className="text-[10px] text-gray-500 mt-0.5 mb-1">
-          {moment(message.timestamp).format("LT")}
-        </div>
-      )}
-    </div>
+            )}
+          </div>
+        )}
+        {showTime && !message.isDeleted && (
+          <div className="text-[10px] text-gray-500 mt-0.5 mb-1">
+            {moment(message.timestamp).format("LT")}
+          </div>
+        )}
+      </div>
     );
   };
 
   const renderChannelMessages = (message, showTime) => {
     const isMine = message.sender._id === userInfo.id;
-    const isHovered = hoveredMessageId === message._id;
+    const isActive = activeMessageId === message._id;
     return (
-      <div
-        className={`mt-2 ${!isMine ? "text-left" : "text-right"}`}
-        onMouseEnter={() => setHoveredMessageId(message._id)}
-        onMouseLeave={() => setHoveredMessageId(null)}
-      >
+      <div className={`mt-2 ${!isMine ? "text-left" : "text-right"}`}>
         {message.isDeleted ? (
           <span className="inline-block italic text-white/30 text-xs border border-white/10 rounded-xl py-1.5 px-3 my-0.5 ml-9">
             This message was deleted
           </span>
         ) : (
           <>
-            {/* Text Message */}
             {message.messageType === "text" && (
-              <div className="inline-flex items-end gap-1">
-                {isMine && isHovered && (
-                  <button
-                    onClick={() => handleDeleteMessage(message._id)}
-                    className="text-white/30 hover:text-red-400 transition-all mb-1"
-                    title="Delete message"
-                  >
-                    <RiDeleteBin6Line className="text-sm" />
-                  </button>
+              <div
+                className="relative inline-block"
+                {...getLongPressProps(message._id)}
+                onClick={() => { if (isActive) setActiveMessageId(null); }}
+              >
+                {isActive && (
+                  <div className={`absolute ${isMine ? "right-0" : "left-0"} bottom-full mb-1 bg-[#1c1d25] border border-[#2a2b33] rounded-xl shadow-2xl z-50 overflow-hidden min-w-[160px]`}>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteForMe(message._id); }}
+                      className="flex items-center gap-2 px-4 py-2.5 text-white/70 hover:text-white text-xs hover:bg-[#2a2b33] w-full transition-all"
+                    >
+                      <RiDeleteBin6Line className="text-sm" /> Delete for me
+                    </button>
+                    {isMine && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteForEveryone(message._id); }}
+                        className="flex items-center gap-2 px-4 py-2.5 text-red-400 text-xs hover:bg-[#2a2b33] w-full transition-all border-t border-[#2a2b33]"
+                      >
+                        <RiDeleteBin6Line className="text-sm" /> Delete for everyone
+                      </button>
+                    )}
+                  </div>
                 )}
                 <div
                   className={`${
                     isMine
                       ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
                       : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
-                  } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%] ml-9 text-sm`}
+                  } border py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%] ml-9 text-sm select-none`}
                   style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}
                 >
                   {message.content}
                 </div>
               </div>
             )}
-  
-        {/* File Message */}
-        {message.messageType === "file" && (
-          <div
-            className={`${
-              isMine
-                ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
-                : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
-            } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%]`}
-          >
-            {checkIfImage(message.fileUrl) ? (
-              <div className="cursor-pointer" onClick={() => { setShowImage(true); setImageURL(message.fileUrl); }}>
-                <img src={`${HOST}/${message.fileUrl}`} height={300} width={300} alt="Uploaded File" />
-              </div>
-            ) : (
-              <div className="flex items-center justify-center gap-4">
-                <span className="text-white/80 text-3xl bg-black/20 rounded-full p-3"><MdFolderZip /></span>
-                <span>{message.fileUrl.split("/").pop()}</span>
-                <span className="bg-black/20 p-3 text-2xl rounded-full hover:bg-black/50 cursor-pointer transition-all duration-300" onClick={() => downloadFile(message.fileUrl)}>
-                  <IoMdArrowRoundDown />
-                </span>
+            {message.messageType === "file" && (
+              <div
+                className={`${
+                  isMine
+                    ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
+                    : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
+                } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%]`}
+              >
+                {checkIfImage(message.fileUrl) ? (
+                  <div className="cursor-pointer" onClick={() => { setShowImage(true); setImageURL(message.fileUrl); }}>
+                    <img src={`${HOST}/${message.fileUrl}`} height={300} width={300} alt="Uploaded File" />
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-4">
+                    <span className="text-white/80 text-3xl bg-black/20 rounded-full p-3"><MdFolderZip /></span>
+                    <span>{message.fileUrl.split("/").pop()}</span>
+                    <span className="bg-black/20 p-3 text-2xl rounded-full hover:bg-black/50 cursor-pointer transition-all" onClick={() => downloadFile(message.fileUrl)}>
+                      <IoMdArrowRoundDown />
+                    </span>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
           </>
         )}
-  
-        {/* Metadata for Timestamp and Sender Info */}
         {!message.isDeleted && message.sender._id !== userInfo.id ? (
           <div className="flex items-center justify-start gap-2 mt-0.5">
             <Avatar className="w-6 h-6 rounded-full overflow-hidden shrink-0">
-              {message.sender.image && (
-                <AvatarImage src={`${HOST}/${message.sender.image}`} alt="Sender Avatar" className="object-cover w-full h-full bg-black" />
-              )}
-                <AvatarFallback className={`uppercase h-6 w-6 flex items-center justify-center text-xs rounded-full ${getColor(message.sender.color)}`}>
-                  {message.sender.firstName ? message.sender.firstName.split("").shift() : message.sender.email.split("").shift()}
-                </AvatarFallback>
+              {message.sender.image && <AvatarImage src={`${HOST}/${message.sender.image}`} alt="Sender Avatar" className="object-cover w-full h-full bg-black" />}
+              <AvatarFallback className={`uppercase h-6 w-6 flex items-center justify-center text-xs rounded-full ${getColor(message.sender.color)}`}>
+                {message.sender.firstName ? message.sender.firstName.split("").shift() : message.sender.email.split("").shift()}
+              </AvatarFallback>
             </Avatar>
             <span className="text-xs text-white/50">{`${message.sender.firstName} ${message.sender.lastName}`}</span>
             {showTime && <span className="text-[10px] text-white/30">{moment(message.timestamp).format("LT")}</span>}
@@ -340,7 +361,10 @@ function MessageContainer() {
   };
 
   return (
-    <div className='flex-1 overflow-y-auto scrollbar-hidden p-3 px-4 md:px-8 w-full'>
+    <div
+      className='flex-1 overflow-y-auto scrollbar-hidden p-3 px-4 md:px-8 w-full'
+      onClick={() => setActiveMessageId(null)}
+    >
         {renderMessages()}
         <div ref={scrollRef}/>
         {

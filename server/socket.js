@@ -173,6 +173,16 @@ const setupSocket = (server) => {
         socket.on("sendMessage", (message) => sendMessage(message, userId));
         socket.on("send-channel-message", (message) => sendChannelMessage(message, userId));
         socket.on("delete-message", (data) => deleteMessage(data, userId));
+        socket.on("delete-message-for-me", async ({ messageId }) => {
+            try {
+                await Message.findByIdAndUpdate(messageId, {
+                    $addToSet: { deletedFor: userId },
+                });
+                socket.emit("message-hidden", { messageId });
+            } catch (error) {
+                console.log("Error in delete-message-for-me:", error.message);
+            }
+        });
         socket.on("disconnect", () => {
             disconnect(socket);
             // Tell everyone this user went offline

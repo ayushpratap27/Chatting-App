@@ -62,6 +62,9 @@ export const SocketProvider = ({ children }) => {
             socket.current.on("message-deleted", ({ messageId }) => {
                 useAppStore.getState().markMessageDeleted(messageId);
             });
+            socket.current.on("message-hidden", ({ messageId }) => {
+                useAppStore.getState().hideMessage(messageId);
+            });
 
             socket.current.on("receiveMessage", handleReceiveMessage);
             socket.current.on("receive-channel-message", handleReceiveChannelMessage);

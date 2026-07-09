@@ -70,6 +70,13 @@ export const createChatSlice = (set, get) => ({
             ),
         });
     },
+    hideMessage: (messageId) => {
+        set({
+            selectedChatMessages: get().selectedChatMessages.filter(
+                (m) => m._id !== messageId && m.id !== messageId
+            ),
+        });
+    },
     addChannel: (channel) => {
         const channels = get().channels;
         set({ channels: [channel, ...channels] });
