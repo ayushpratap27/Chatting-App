@@ -58,6 +58,11 @@ export const SocketProvider = ({ children }) => {
                 useAppStore.getState().removeOnlineUser(userId);
             });
 
+            // Message deletion
+            socket.current.on("message-deleted", ({ messageId }) => {
+                useAppStore.getState().markMessageDeleted(messageId);
+            });
+
             socket.current.on("receiveMessage", handleReceiveMessage);
             socket.current.on("receive-channel-message", handleReceiveChannelMessage);
             setSocketInstance(socket.current);

@@ -2,7 +2,6 @@ import { Server as SocketIOServer } from "socket.io";
 import jwt from "jsonwebtoken";
 import Message from "./models/messages.model.js";
 import Channel from "./models/channel.model.js";
-
 // Parse a raw cookie header string into a key-value object
 const parseCookies = (cookieHeader) => {
     const cookies = {};
@@ -127,6 +126,39 @@ const setupSocket = (server) => {
         }
     };
 
+    const deleteMessage = async ({ messageId }, authenticatedUserId) => {
+        try {
+            const message = await Message.findById(messageId);
+            if (!message) return;
+            // Only the original sender can delete
+            if (message.sender.toString() !== authenticatedUserId) return;
+
+            message.isDeleted = true;
+            await message.save();
+
+            if (message.recipient) {
+                // DM — notify both parties
+                const recipientSocketId = userSocketMap.get(message.recipient.toString());
+                const senderSocketId = userSocketMap.get(authenticatedUserId);
+                if (recipientSocketId) io.to(recipientSocketId).emit("message-deleted", { messageId });
+                if (senderSocketId) io.to(senderSocketId).emit("message-deleted", { messageId });
+            } else {
+                // Channel — find channel and notify all members + admin
+                const channel = await Channel.findOne({ messages: messageId });
+                if (channel) {
+                    const memberIds = new Set(channel.members.map((m) => m.toString()));
+                    memberIds.add(channel.admin.toString());
+                    memberIds.forEach((uid) => {
+                        const socketId = userSocketMap.get(uid);
+                        if (socketId) io.to(socketId).emit("message-deleted", { messageId });
+                    });
+                }
+            }
+        } catch (error) {
+            console.log("Error in deleteMessage:", error.message);
+        }
+    };
+
     io.on("connection", (socket) => {
         // socket.userId is set by the JWT middleware above — guaranteed to be valid
         const userId = socket.userId;
@@ -140,6 +172,7 @@ const setupSocket = (server) => {
 
         socket.on("sendMessage", (message) => sendMessage(message, userId));
         socket.on("send-channel-message", (message) => sendChannelMessage(message, userId));
+        socket.on("delete-message", (data) => deleteMessage(data, userId));
         socket.on("disconnect", () => {
             disconnect(socket);
             // Tell everyone this user went offline

@@ -60,6 +60,16 @@ export const createChatSlice = (set, get) => ({
     removeOnlineUser: (userId) => {
         set({ onlineUsers: get().onlineUsers.filter((id) => id !== userId) });
     },
+    markMessageDeleted: (messageId) => {
+        const messages = get().selectedChatMessages;
+        set({
+            selectedChatMessages: messages.map((m) =>
+                (m._id === messageId || m.id === messageId)
+                    ? { ...m, isDeleted: true }
+                    : m
+            ),
+        });
+    },
     addChannel: (channel) => {
         const channels = get().channels;
         set({ channels: [channel, ...channels] });
