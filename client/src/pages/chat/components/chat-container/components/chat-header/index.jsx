@@ -5,6 +5,7 @@ import { HOST } from '@/utils/constants';
 import { useSocket } from '@/context/SocketContext';
 import React, { useEffect, useState } from 'react'
 import { RiCloseFill } from "react-icons/ri"
+import { IoArrowBack } from 'react-icons/io5';
 
 function ChatHeader() {
 
@@ -25,9 +26,16 @@ function ChatHeader() {
   }, [selectedChatData, selectedChatType, socket]);
 
   return (
-    <div className="h-16 border-b-2 border-[#2f303b] flex items-center justify-between px-5">
-      <div className="flex gap-4 items-center w-full justify-between">
-        <div className="flex gap-3 items-center">
+    <div className="h-16 border-b-2 border-[#2f303b] flex items-center justify-between px-3 md:px-5">
+      <div className="flex gap-3 items-center w-full justify-between">
+        <div className="flex gap-2 md:gap-3 items-center">
+          {/* Back arrow — mobile only (below sm breakpoint) */}
+          <button
+            className="sm:hidden text-white/70 hover:text-white mr-1"
+            onClick={closeChat}
+          >
+            <IoArrowBack className="text-2xl" />
+          </button>
           <div className="w-10 h-10 relative shrink-0">
             {
               selectedChatType === "contact" ? (
@@ -75,7 +83,7 @@ function ChatHeader() {
             )}
           </div>
         </div>
-        <div className="flex items-center justify-center gap-5">
+        <div className="hidden sm:flex items-center justify-center gap-5">
           <button
             className="text-neutral-500 focus:border-none focus:outline-none focus:text-white duration-300 transition-all"
             onClick={closeChat}

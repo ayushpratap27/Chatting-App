@@ -166,7 +166,7 @@ function MessageContainer() {
             message.sender !== selectedChatData._id
               ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
               : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
-          } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[50%] break-words text-sm`}
+          } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%] break-words text-sm`}
           style={{ whiteSpace: "pre-wrap",  wordWrap: "break-word" }}
         >
           {message.content}
@@ -178,7 +178,7 @@ function MessageContainer() {
             message.sender !== selectedChatData._id
               ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
               : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
-          } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[50%] break-words`}
+          } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%] break-words`}
         >
           {checkIfImage(message.fileUrl) ? (
             <div className="cursor-pointer"
@@ -228,7 +228,7 @@ function MessageContainer() {
               message.sender._id === userInfo.id
                 ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
                 : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
-            } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[50%] ml-9 text-sm`}
+            } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[75%] md:max-w-[50%] ml-9 text-sm`}
             style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}
           >
             {message.content}
@@ -307,7 +307,7 @@ function MessageContainer() {
   };
 
   return (
-    <div className='flex-1 overflow-y-auto scrollbar-hidden p-4 px-8 md:w-[65vw] lg:w-[70vw] xl:w-[80vw] w-full'>
+    <div className='flex-1 overflow-y-auto scrollbar-hidden p-3 px-4 md:px-8 w-full'>
         {renderMessages()}
         <div ref={scrollRef}/>
         {

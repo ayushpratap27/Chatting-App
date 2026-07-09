@@ -17,27 +17,35 @@ function Chat() {
   }, [userInfo, navigate]);
 
   return (
-    <div className="flex h-[100vh] text-white overflow-hidden ">
+    <div className="flex h-[100vh] text-white overflow-hidden bg-[#1b1c24]">
       {
         isUploading && (
-        <div className="h-[100vh] w-[100vw] fixed top-0 z-10 left-0 bg-black/80 flex items-center         justify-center flex-col gap-5 backdrop-blur-lg">
-          <h5 className="text-5xl animate-pulse">Uploading File</h5>
+        <div className="h-[100vh] w-[100vw] fixed top-0 z-10 left-0 bg-black/80 flex items-center justify-center flex-col gap-5 backdrop-blur-lg">
+          <h5 className="text-3xl md:text-5xl animate-pulse">Uploading File</h5>
           {fileUploadProgress}%
         </div>
       )}
       {
         isDownloading && (
         <div className="h-[100vh] w-[100vw] fixed top-0 z-10 left-0 bg-black/80 flex items-center justify-center flex-col gap-5 backdrop-blur-lg">
-          <h5 className="text-5xl animate-pulse">Downloading File</h5>
+          <h5 className="text-3xl md:text-5xl animate-pulse">Downloading File</h5>
           {fileDownloadProgress}%
         </div>
       )}
-      <ContactsContainer />
-      {
-        selectedChatType === undefined ? ( 
-        <EmptyChatContainer /> 
-      ) : ( 
-        <ChatContainer /> 
+
+      {/* Sidebar: full-screen on mobile when no chat open, fixed width on sm+ */}
+      <div className={`
+        ${selectedChatType !== undefined ? "hidden sm:flex" : "flex"}
+        flex-col w-full sm:w-[45vw] md:w-[35vw] lg:w-[30vw] xl:w-[20vw] shrink-0
+      `}>
+        <ContactsContainer />
+      </div>
+
+      {/* Chat area: full-screen on mobile when chat open */}
+      {selectedChatType === undefined ? (
+        <EmptyChatContainer />
+      ) : (
+        <ChatContainer />
       )}
     </div>
   )

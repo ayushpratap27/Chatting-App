@@ -157,10 +157,10 @@ function MessageBar({ onToggleSuggestions }) {
     };
 
   return (
-    <div className='h-[10vh] bg-[#1c1d25] flex justify-center items-center px-8 gap-6'>
-        <div className={`flex-1 flex bg-[#2a2b33] rounded-md items-center gap-5 pr-5 transition-all duration-200 ${isEnhancing ? "ring-1 ring-[#8417ff]/50" : ""}`}>
+    <div className='h-[10vh] bg-[#1c1d25] flex justify-center items-center px-3 md:px-8 gap-3 md:gap-6'>
+        <div className={`flex-1 flex bg-[#2a2b33] rounded-md items-center gap-2 md:gap-4 pr-2 md:pr-4 transition-all duration-200 ${isEnhancing ? "ring-1 ring-[#8417ff]/50" : ""}`}>
             <textarea
-                className="flex-1 p-5 bg-transparent text-1xl rounded-md focus:border-none focus:outline-none resize-none"
+                className="flex-1 p-3 md:p-5 bg-transparent text-sm rounded-md focus:border-none focus:outline-none resize-none"
                 placeholder={isEnhancing ? "Enhancing…" : "Enter Message"}
                 value={message}
                 disabled={isEnhancing}
@@ -181,7 +181,7 @@ function MessageBar({ onToggleSuggestions }) {
                 onClick={onToggleSuggestions}
                 title="Suggest replies"
             >
-                <HiSparkles className="text-xl" />
+                <HiSparkles className="text-lg md:text-xl" />
             </button>
 
             {/* 🪄 Composer AI — only visible when text is present and not currently enhancing */}
@@ -192,7 +192,7 @@ function MessageBar({ onToggleSuggestions }) {
                         onClick={() => setShowEnhanceMenu((v) => !v)}
                         title="Improve message"
                     >
-                        <PiMagicWandBold className="text-xl" />
+                        <PiMagicWandBold className="text-lg md:text-xl" />
                     </button>
 
                     {showEnhanceMenu && (
@@ -220,12 +220,12 @@ function MessageBar({ onToggleSuggestions }) {
 
             <button className='text-neutral-500 focus:border-none focus:outline-none focus:text-white duration-300 transition-all'
             onClick={handleAttachmentClick}>
-                <GrAttachment className='text-2xl' />
+                <GrAttachment className='text-lg md:text-2xl' />
             </button>
             <input type="file" className='hidden' ref={fileInputRef} onChange={handleAttachmentChange} />
             <div className='relative'>
                 <button className='text-neutral-500 focus:border-none focus:outline-none focus:text-white duration-300 transition-all' onClick={() => setEmojiPickerOpen(true)}>
-                    <RiEmojiStickerLine className='text-2xl' />
+                    <RiEmojiStickerLine className='text-lg md:text-2xl' />
                 </button>
                 <div className='absolute bottom-16 right-0' ref={emojiRef}>
                     <EmojiPicker 
@@ -237,8 +237,8 @@ function MessageBar({ onToggleSuggestions }) {
                 </div>
             </div>
         </div>
-        <button className='bg-[#8417ff] rounded-md flex items-center justify-center p-5 focus:border-none hover:bg-[#741bda] focus:bg-[#741bda] focus:outline-none focus:text-white duration-300 transition-all' onClick={handleSendMessage}>
-            <IoSend className='text-2xl' />
+        <button className='bg-[#8417ff] rounded-md flex items-center justify-center p-3 md:p-5 focus:border-none hover:bg-[#741bda] focus:bg-[#741bda] focus:outline-none focus:text-white duration-300 transition-all' onClick={handleSendMessage}>
+            <IoSend className='text-lg md:text-2xl' />
         </button>
     </div>
   )
