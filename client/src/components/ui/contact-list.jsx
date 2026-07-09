@@ -32,10 +32,10 @@ const ContactList = ({ contacts, isChannel = false }) => {
           return (
           <div
             key={contact._id}
-            className={`pl-10 py-2 transition-all duration-300 cursor-pointer ${
+            className={`pl-10 py-2 transition-all duration-200 cursor-pointer border-l-2 ${
               isActive
-                ? "bg-[#8417ff] hover:bg-[#8417ff]"
-                : "hover:bg-[#f1f1f111]"
+                ? "bg-[#8417ff]/20 border-[#8417ff]"
+                : "border-transparent hover:bg-[#f1f1f111]"
             }`}
             onClick={() => handleClick(contact)}
           >
@@ -51,13 +51,7 @@ const ContactList = ({ contacts, isChannel = false }) => {
                       />
                     ) : (
                       <div
-                        className={`
-                          ${
-                              isActive
-                                  ? "bg-[#ffffff22] border border-white/70"
-                                  : getColor(contact.color)
-                          }
-                          uppercase h-10 w-10 text-lg border-[1px] flex items-center justify-center rounded-full shrink-0`}
+                        className={`${getColor(contact.color)} uppercase h-10 w-10 text-lg border-[1px] flex items-center justify-center rounded-full shrink-0`}
                       >
                         {contact.firstName
                           ? contact.firstName.split("").shift()
@@ -67,7 +61,7 @@ const ContactList = ({ contacts, isChannel = false }) => {
                   </Avatar>
                 )}
                 {isChannel && <div className="bg-[#ffffff22] h-10 w-10 flex items-center justify-center rounded-full shrink-0">#</div>}
-                <span className="truncate">
+                <span className={`truncate ${isActive ? "text-white font-medium" : ""}`}>
                   {isChannel
                     ? contact.name
                     : contact.firstName
