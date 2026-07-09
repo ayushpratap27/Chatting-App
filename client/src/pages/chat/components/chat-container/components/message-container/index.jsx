@@ -104,6 +104,15 @@ function MessageContainer() {
       const messageDate = moment(message.timestamp).format("YYYY-MM-DD");
       const showDate = messageDate !== lastDate;
       lastDate = messageDate;
+
+      // Show time only for the last message within the same minute
+      const currentMinute = moment(message.timestamp).format("YYYY-MM-DD HH:mm");
+      const nextMessage = selectedChatMessages[index + 1];
+      const nextMinute = nextMessage
+        ? moment(nextMessage.timestamp).format("YYYY-MM-DD HH:mm")
+        : null;
+      const showTime = !nextMinute || currentMinute !== nextMinute;
+
       return (
         <div key={message._id || index}>
           {showDate && (
@@ -111,8 +120,8 @@ function MessageContainer() {
               {moment(message.timestamp).format("LL")}
             </div>
           )}
-          { selectedChatType === "contact" && renderDMMessages(message) }
-          { selectedChatType === "channel" && renderChannelMessages(message) }
+          { selectedChatType === "contact" && renderDMMessages(message, showTime) }
+          { selectedChatType === "channel" && renderChannelMessages(message, showTime) }
         </div>
       );
     });
@@ -146,7 +155,7 @@ function MessageContainer() {
     }
   };
 
-  const renderDMMessages = (message) => (
+  const renderDMMessages = (message, showTime) => (
     <div
       className={`${
         message.sender === selectedChatData._id ? "text-left" : "text-right"
@@ -156,9 +165,9 @@ function MessageContainer() {
         <div
           className={`${
             message.sender !== selectedChatData._id
-              ? "bg-[#8417ff]/5 text-white/80 border-[#8417ff]/50"
-              : "bg-[#2a2b33]/5 text-white/80 border-[#ffffff]/20"
-          } border inline-block p-4 rounded-md my-1 max-w-[50%] break-words`}
+              ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
+              : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
+          } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[50%] break-words text-sm`}
           style={{ whiteSpace: "pre-wrap",  wordWrap: "break-word" }}
         >
           {message.content}
@@ -168,9 +177,9 @@ function MessageContainer() {
         <div
           className={`${
             message.sender !== selectedChatData._id
-              ? "bg-[#8417ff]/5 text-white/80 border-[#8417ff]/50"
-              : "bg-[#2a2b33]/5 text-white/80 border-[#ffffff]/20"
-          } border inline-block p-4 rounded-md my-1 max-w-[50%] break-words`}
+              ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
+              : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
+          } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[50%] break-words`}
         >
           {checkIfImage(message.fileUrl) ? (
             <div className="cursor-pointer"
@@ -202,23 +211,25 @@ function MessageContainer() {
           )}
         </div>
       )}
-      <div className="text-xs text-gray-600">
-        {moment(message.timestamp).format("LT")}
-      </div>
+      {showTime && (
+        <div className="text-[10px] text-gray-500 mt-0.5 mb-1">
+          {moment(message.timestamp).format("LT")}
+        </div>
+      )}
     </div>
-  ); 
+  );
 
-  const renderChannelMessages = (message) => {
+  const renderChannelMessages = (message, showTime) => {
     return (
-      <div className={`mt-5 ${message.sender._id !== userInfo.id ? "text-left" : "text-right"}`}>
+      <div className={`mt-2 ${message.sender._id !== userInfo.id ? "text-left" : "text-right"}`}>
         {/* Text Message */}
         {message.messageType === "text" && (
           <div
             className={`${
               message.sender._id === userInfo.id
-                ? "bg-[#8417ff]/5 text-white/80 border-[#8417ff]/50"
-                : "bg-[#2a2b33]/5 text-white/80 border-[#ffffff]/20"
-            } border inline-block p-4 rounded-md my-1 max-w-[50%] ml-9`}
+                ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
+                : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
+            } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[50%] ml-9 text-sm`}
             style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}
           >
             {message.content}
@@ -230,9 +241,9 @@ function MessageContainer() {
           <div
             className={`${
               message.sender._id === userInfo.id
-                ? "bg-[#8417ff]/5 text-white/80 border-[#8417ff]/50"
-                : "bg-[#2a2b33]/5 text-white/80 border-[#ffffff]/20"
-            } border inline-block p-4 rounded-md my-1 max-w-[50%]`}
+                ? "bg-[#8417ff]/25 text-white border-[#8417ff]/60"
+                : "bg-[#2a2b33] text-white/90 border-[#ffffff]/10"
+            } border inline-block py-2 px-3 rounded-xl my-0.5 max-w-[50%]`}
           >
             {checkIfImage(message.fileUrl) ? (
               <div
@@ -263,8 +274,8 @@ function MessageContainer() {
   
         {/* Metadata for Timestamp and Sender Info */}
         {message.sender._id !== userInfo.id ? (
-          <div className="flex items-center justify-start gap-3">
-            <Avatar className="w-8 h-8 rounded-full overflow-hidden">
+          <div className="flex items-center justify-start gap-2 mt-0.5">
+            <Avatar className="w-6 h-6 rounded-full overflow-hidden shrink-0">
               {message.sender.image && (
                 <AvatarImage
                   src={`${HOST}/${message.sender.image}`}
@@ -273,7 +284,7 @@ function MessageContainer() {
                 />
               )}
                 <AvatarFallback
-                  className={`uppercase h-8 w-8 flex items-center justify-center text-lg rounded-full ${getColor(
+                  className={`uppercase h-6 w-6 flex items-center justify-center text-xs rounded-full ${getColor(
                     message.sender.color
                   )}`}
                 >
@@ -282,15 +293,15 @@ function MessageContainer() {
                     : message.sender.email.split("").shift()}
                 </AvatarFallback>
             </Avatar>
-            <span className="text-sm text-white/60">{`${message.sender.firstName} ${message.sender.lastName}`}</span>
-            <span className="text-xs text-white/60">
-              {moment(message.timestamp).format("LT")}
-            </span>
+            <span className="text-xs text-white/50">{`${message.sender.firstName} ${message.sender.lastName}`}</span>
+            {showTime && <span className="text-[10px] text-white/30">{moment(message.timestamp).format("LT")}</span>}
           </div>
         ) : (
-          <div className="text-xs text-white/60 mt-1">
-            {moment(message.timestamp).format("LT")}
-          </div>
+          showTime && (
+            <div className="text-[10px] text-white/30 mt-0.5 mb-1">
+              {moment(message.timestamp).format("LT")}
+            </div>
+          )
         )}
       </div>
     );

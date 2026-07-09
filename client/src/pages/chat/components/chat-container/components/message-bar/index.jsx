@@ -149,7 +149,7 @@ function MessageBar({ onToggleSuggestions }) {
     };
 
   return (
-    <div className='h-[10vh] bg-[#1c1d25] flex justify-center items-center px-8 mb-6 gap-6'>
+    <div className='h-[10vh] bg-[#1c1d25] flex justify-center items-center px-8 gap-6'>
         <div className={`flex-1 flex bg-[#2a2b33] rounded-md items-center gap-5 pr-5 transition-all duration-200 ${isEnhancing ? "ring-1 ring-[#8417ff]/50" : ""}`}>
             <textarea
                 className="flex-1 p-5 bg-transparent text-1xl rounded-md focus:border-none focus:outline-none resize-none"

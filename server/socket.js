@@ -135,6 +135,12 @@ const setupSocket = (server) => {
 
         socket.on("sendMessage", (message) => sendMessage(message, userId));
         socket.on("send-channel-message", (message) => sendChannelMessage(message, userId));
+        socket.on("get-user-status", (targetUserId) => {
+            socket.emit("user-status", {
+                userId: targetUserId,
+                isOnline: userSocketMap.has(targetUserId),
+            });
+        });
         socket.on("disconnect", () => disconnect(socket));
     });
 };
