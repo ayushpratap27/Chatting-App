@@ -82,18 +82,28 @@ export const summarize = async (req, res) => {
         }
 
         // ── Overall summary mode ─────────────────────────────────────────────
-        const chatContext =
-            type === "dm"
-                ? "a private direct message conversation"
-                : "a group channel conversation";
+        // Scale length based on how many messages there are
+        const count = textMessages.length;
+        const lengthGuide = count <= 3
+            ? "1 short sentence"
+            : count <= 8
+            ? "1-2 sentences"
+            : count <= 20
+            ? "2-3 sentences"
+            : "3-4 sentences";
 
-        const prompt = `You are a concise and friendly chat assistant. Summarize the following unread messages from ${chatContext}. Keep it to 2-4 sentences. Capture the key topics, decisions, and any action items. Write in a natural, readable tone.\n\nMessages:\n${formatTranscript(textMessages)}`;
+        const isDM = type === "dm";
+        const perspectiveNote = isDM
+            ? "Write from the perspective of the person reading this — use 'you' to refer to them. For example: 'Suman Ji misses you and is asking you to share your class notes.'"
+            : "Write from the perspective of a channel member reading this — use 'you' where relevant.";
+
+        const prompt = `You are a chat assistant helping someone catch up on unread messages. Summarize the following in ${lengthGuide}. ${perspectiveNote} Focus on what is being asked or told to the reader. Be direct and natural.\n\nMessages:\n${formatTranscript(textMessages)}`;
 
         const completion = await getGroqClient().chat.completions.create({
             model: MODEL,
             messages: [{ role: "user", content: prompt }],
             temperature: 0.3,
-            max_tokens: 512,
+            max_tokens: 256,
         });
 
         const summary = completion.choices[0].message.content.trim();
