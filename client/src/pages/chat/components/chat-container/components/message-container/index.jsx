@@ -207,7 +207,7 @@ function MessageContainer() {
             className="relative inline-block max-w-[75%] md:max-w-[50%]"
             {...getLongPressProps(message._id)}
           >
-            {/* Delete popup */}}
+            {/* Delete popup */}
             {isActive && (
               <div className={`absolute ${isMine ? "right-0" : "left-0"} bottom-full mb-1 bg-[#1c1d25] border border-[#2a2b33] rounded-xl shadow-2xl z-50 overflow-hidden min-w-[160px]`}>
                 <button
