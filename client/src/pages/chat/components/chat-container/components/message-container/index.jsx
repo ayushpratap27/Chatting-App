@@ -30,8 +30,8 @@ function MessageContainer() {
   const [showImage, setShowImage] = useState(false);
   const [imageURL, setImageURL] = useState(null);
   const [activeMessageId, setActiveMessageId] = useState(null);
-  // Prevents the synthetic click that fires after a touch long-press from closing the popup
-  const justLongPressedRef = useRef(false);
+  // Tracks whether a long press just fired so the subsequent synthetic click can be swallowed
+  const longPressActiveRef = useRef(false);
   const socket = useSocket();
 
   const handleDeleteForEveryone = (messageId) => {
@@ -46,22 +46,31 @@ function MessageContainer() {
     setActiveMessageId(null);
   };
 
-  // Long-press: fires after 500ms hold. Sets the justLongPressedRef flag so the
-  // synthetic click that mobile browsers fire after touchend doesn't close the popup.
+  // Long press via Pointer Events (works on both touch and mouse).
+  // onClickCapture intercepts the synthetic click the browser fires after touchend
+  // — because preventDefault on pointerup does NOT prevent click per the spec,
+  // but capture-phase stopPropagation prevents it from reaching the outer container.
   const getLongPressProps = (messageId) => {
     let timer;
     return {
-      onMouseDown:  () => { timer = setTimeout(() => setActiveMessageId(messageId), 500); },
-      onMouseUp:    () => clearTimeout(timer),
-      onMouseLeave: () => clearTimeout(timer),
-      onTouchStart: () => {
+      onPointerDown: (e) => {
+        if (e.button && e.button !== 0) return;
+        longPressActiveRef.current = false;
         timer = setTimeout(() => {
-          justLongPressedRef.current = true;
+          longPressActiveRef.current = true;
           setActiveMessageId(messageId);
         }, 500);
       },
-      onTouchEnd:   () => clearTimeout(timer),
-      onTouchMove:  () => clearTimeout(timer),
+      onPointerUp:     () => clearTimeout(timer),
+      onPointerMove:   () => { if (!longPressActiveRef.current) clearTimeout(timer); },
+      onPointerCancel: () => { clearTimeout(timer); longPressActiveRef.current = false; },
+      // Runs BEFORE outer container's onClick — swallows the post-long-press synthetic click
+      onClickCapture:  (e) => {
+        if (longPressActiveRef.current) {
+          longPressActiveRef.current = false;
+          e.stopPropagation();
+        }
+      },
     };
   };
 
@@ -369,14 +378,7 @@ function MessageContainer() {
   return (
     <div
       className='flex-1 overflow-y-auto scrollbar-hidden p-3 px-4 md:px-8 w-full'
-      onClick={() => {
-        // Swallow the synthetic click that fires after a touch long-press
-        if (justLongPressedRef.current) {
-          justLongPressedRef.current = false;
-          return;
-        }
-        setActiveMessageId(null);
-      }}
+      onClick={() => setActiveMessageId(null)}
     >
         {renderMessages()}
         <div ref={scrollRef}/>
