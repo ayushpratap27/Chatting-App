@@ -1,0 +1,31 @@
+# Development overrides — use with: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# What this adds over the base compose file:
+#   - Hot-reload for server (nodemon) and client (Vite HMR) via volume mounts
+#   - Source code mounted into containers so edits are reflected instantly
+#   - Vite dev server exposed on port 5173 instead of nginx on port 80
+
+services:
+  server:
+    build:
+      context: ./server
+      target: deps            # stop at deps stage — no need for prod optimizations
+    volumes:
+      - ./server:/app         # mount source for live reload
+      - /app/node_modules     # anonymous volume prevents host node_modules overwriting container's
+    command: ["node", "--watch", "index.js"]   # Node built-in watch (no nodemon needed in container)
+    environment:
+      NODE_ENV: development
+
+  client:
+    build:
+      context: ./client
+      target: builder         # stop at builder stage — skip nginx
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    ports:
+      - "5173:5173"           # expose Vite dev server instead of nginx port 80
+    environment:
+      NODE_ENV: development

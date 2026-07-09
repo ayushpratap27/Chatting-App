@@ -1,0 +1,61 @@
+services:
+  # ── MongoDB ──────────────────────────────────────────────────────────────────
+  mongodb:
+    image: mongo:7-jammy
+    container_name: chatting-app-mongodb
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - app-network
+
+  # ── Backend (Node.js / Express) ───────────────────────────────────────────────
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: chatting-app-server
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      DATABASE_URL: mongodb://mongodb:27017/chatting-app
+      JWT_KEY: ${JWT_KEY:-change_this_secret_in_production}
+      ORIGIN: ${ORIGIN:-http://localhost:80}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  # ── Frontend (React / nginx) ──────────────────────────────────────────────────
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        VITE_SERVER_URL: ${VITE_SERVER_URL:-http://localhost:3001}
+    container_name: chatting-app-client
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - app-network
+
+volumes:
+  mongo_data:
+    name: chatting-app-mongo-data
+
+networks:
+  app-network:
+    driver: bridge
